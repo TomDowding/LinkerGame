@@ -10,6 +10,9 @@ public class SpriteManager: Singleton<SpriteManager> {
 	[SerializeField] 
 	private Sprite[] tileOutlineSprites;
 
+	[SerializeField] 
+	private Sprite[] boardSquareSprites;
+
 
 	public int NumTileTypes() {
 		return tileSprites.Length;

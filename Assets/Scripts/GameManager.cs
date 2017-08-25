@@ -4,24 +4,42 @@ using UnityEngine;
 
 public class GameManager : Singleton<GameManager> {
 
+	[SerializeField]
+	private GameObject dummyLinkObject;
+
 	private ArrayList chain;
+
+	private ArrayList links;
 
 	public bool interactionEnabled {get; private set;}
 
 
 	void Start () {
+		
+		chain = new ArrayList();
+		links = new ArrayList();
 
 		Level level = new Level();
 		StartLevel(level);
 	}
 		
 	private void StartLevel(Level level) {
-		chain = new ArrayList();
+
+		EmptyChain();
+
 		Board.Instance.SetupForLevel(level);
 		interactionEnabled = true;
 	}
 
 	public void EmptyChain() {
+
+		for(int i = links.Count - 1; i >= 0; i--) {
+			GameObject link = (GameObject) links[i];
+			DestroyImmediate(link);
+		}
+			
+		links.Clear();
+
 		chain.Clear();
 	}
 
@@ -52,6 +70,10 @@ public class GameManager : Singleton<GameManager> {
 	private void AddTileToChain(Tile tile, Tile linkedToTile) {
 		chain.Add(tile);
 		tile.AddToChain(linkedToTile);
+
+		if(linkedToTile != null) {
+			AddLink(linkedToTile, tile);
+		}
 	}
 
 	public void TryRemoveTilesAfterTile(Tile tile) {
@@ -62,7 +84,6 @@ public class GameManager : Singleton<GameManager> {
 			Tile chainTile = (Tile) chain[i];
 		
 			if(chainTile == tile) {
-				Debug.Log("Found tile in chain at index " + i);
 				chainIndex = i;
 				break;
 			}
@@ -79,17 +100,47 @@ public class GameManager : Singleton<GameManager> {
 			chainTile.RemoveFromChain();
 			chain.Remove(chainTile);
 		}
+
+		// Remove the relevant links as well.
+		for(int i = links.Count - 1; i >= chainIndex; i--) {
+			GameObject linkObject = (GameObject) links[i];
+			links.Remove(linkObject);
+			DestroyImmediate(linkObject);
+		}
 	}
 
 
 	public void FinishedChaining() {
 
-		Debug.Log("Finished chaining!");
 		foreach(Tile tile in chain) {
 
 			tile.RemoveFromChain();
 		}
 
 		EmptyChain();
+	}
+
+	private void AddLink(Tile fromTile, Tile toTile) {
+
+		// Create the link
+		GameObject newLinkObject = Instantiate(dummyLinkObject) as GameObject;
+		newLinkObject.SetActive(true);
+		newLinkObject.name = "Linker_" + fromTile.boardCoord.Description() + "_to_" + toTile.boardCoord.Description();
+
+		// Attach link to the from tile
+		Transform newLinkTransform = newLinkObject.transform;
+		newLinkTransform.parent = fromTile.transform;
+		newLinkTransform.localScale = dummyLinkObject.transform.localScale;
+		newLinkTransform.localPosition = Vector3.zero;
+
+		// Rotate link to point between two tiles
+		Vector2 v1 = new Vector2(fromTile.boardCoord.x, fromTile.boardCoord.y);
+		Vector2 v2 = new Vector2(toTile.boardCoord.x, toTile.boardCoord.y);
+		float angle = Mathf.Atan2(v1.y - v2.y, v1.x - v2.x) * Mathf.Rad2Deg;
+		angle += 180;
+		newLinkTransform.eulerAngles = new Vector3(0, 0, angle);
+
+		// Keep in array so we can remove them all later
+		links.Add(newLinkObject);
 	}
 }

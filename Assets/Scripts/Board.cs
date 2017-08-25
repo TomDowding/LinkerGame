@@ -63,7 +63,6 @@ public class Board: Singleton<Board> {
 
 	public void SetupForLevel(Level level) {
 
-		// Destroy our working prefabs instances in scene
 		for(int i = 0; i < boardSquareHolder.childCount; i++) {
 			DestroyImmediate(boardSquareHolder.GetChild(i).gameObject);
 		}
@@ -154,16 +153,7 @@ public class Board: Singleton<Board> {
 	private Vector2 PositionForTile(Vector2 tileSize, BoardCoord boardCoord) {
 		return new Vector2((boardCoord.x * tileSize.x) + (tileSize.x * 0.5f), (boardCoord.y * tileSize.y) + (tileSize.y * 0.5f));
 	}
-
-	private Vector2 ScreenSpaceToBoardSpace(Vector2 screenPos) {
-
-		float x = screenPos.x + boardOrigin.x;
-		float y = screenPos.y + boardOrigin.y;
-		return new Vector2(x, y);
-	}
 		
-
-
 	private void ShuffleBoard() {
 
 	}
