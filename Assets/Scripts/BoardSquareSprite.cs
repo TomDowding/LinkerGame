@@ -10,7 +10,7 @@ public class BoardSquareSprite : MonoBehaviour {
 		spriteRenderer.sprite = sprite;
 	}
 
-	public Vector2 GetTileSize() {
+	public Vector2 GetSize() {
 		return spriteRenderer.bounds.size;
 	}
 

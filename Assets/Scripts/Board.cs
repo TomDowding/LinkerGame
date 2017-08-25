@@ -2,8 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public struct BoardSize {
+	// Unit is number of squares
+	public int width;	
+	public int height;
+}
 
 public struct BoardCoord {
+	// A coordinate position on the board, in number of squares
 	public int x;
 	public int y;
 
@@ -32,10 +39,10 @@ public class Board: Singleton<Board> {
 	private Transform tileHolder;
 
 	[SerializeField] 
-	private Sprite[] tileSprites;
+	private BoardSize boardSize;
 
 	[SerializeField] 
-	private int boardSize = 9;
+	private Canvas canvas;
 
 	private Tile[,] tiles;
 
@@ -53,6 +60,14 @@ public class Board: Singleton<Board> {
 
 	void Start () {
 
+		// Destroy our working prefabs instances in scene
+		for(int i = 0; i < boardSquareHolder.childCount; i++) {
+			DestroyImmediate(boardSquareHolder.GetChild(i).gameObject);
+		}
+		for(int i = 0; i < tileHolder.childCount; i++) {
+			DestroyImmediate(tileHolder.GetChild(i).gameObject);
+		}
+
 		CreateInitialTiles();
 	}
 	
@@ -62,20 +77,22 @@ public class Board: Singleton<Board> {
 
 	private void CreateInitialTiles() {
 
-		// Get the tile size from the dummy tile, to help with tile positioning
-		BoardSquareSprite boardSquareSprite = dummyBoardSquareObject.GetComponent<BoardSquareSprite>();
-		boardSquareSize = boardSquareSprite.GetTileSize();
+		// Get the board square size from the dummy board square, to help with tile positioning
+		BoardSquare boardSquare = dummyBoardSquareObject.GetComponent<BoardSquare>();
+		boardSquareSize = boardSquare.GetSize();
 		Debug.Log("boardSquareSize size: " + boardSquareSize.x + ", " + boardSquareSize.y);
-
-		// Find the appropriate board start point for our board size
-		boardOrigin = new Vector2((boardSquareSize.x * boardSize) * -0.5f, (boardSquareSize.y * boardSize) * -0.5f);
 	
-		// Create an initial array of tiles
-		boardSquares = new BoardSquareSprite[boardSize, boardSize];
-		tiles = new Tile[boardSize, boardSize];
+		// Find the appropriate board start point for our board size
+		// We want centered horizontally, but anchored to bottom of screen vertically
+		RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+		boardOrigin = new Vector2((boardSquareSize.x * boardSize.width) * -0.5f, (canvasRect.rect.size.y  * -0.5f) + 5);
 
-		for (int y = 0; y < boardSize; y++) {
-			for (int x = 0; x < boardSize; x++) {
+		// Create an initial array of tiles
+		boardSquares = new BoardSquareSprite[boardSize.width, boardSize.height];
+		tiles = new Tile[boardSize.width, boardSize.height];
+
+		for (int y = 0; y < boardSize.height; y++) {
+			for (int x = 0; x < boardSize.width; x++) {
 
 				// TODO: Check if want a tile here or not (different levels)
 
@@ -126,20 +143,15 @@ public class Board: Singleton<Board> {
 
 		Tile newTile = newTileObject.GetComponent<Tile>();
 		int tileType = GetRandomTileType();
-		newTile.SetupTile(tileType, boardCoord, tileSprites[tileType]);
+		newTile.SetupTile(tileType, boardCoord);
 
 		return newTile;
 	}
 
 	private int GetRandomTileType() {
-		return Random.Range(0, tileSprites.Length);
+		return Random.Range(0, SpriteManager.Instance.NumTileTypes());
 	}
-
-	private Sprite GetRandomTileSprite() {
-		int randomTypeIndex = Random.Range(0, tileSprites.Length);
-		return tileSprites[randomTypeIndex];
-	}
-
+		
 	private Vector2 PositionForTile(Vector2 tileSize, BoardCoord boardCoord) {
 		return new Vector2((boardCoord.x * tileSize.x) + (tileSize.x * 0.5f), (boardCoord.y * tileSize.y) + (tileSize.y * 0.5f));
 	}
@@ -151,6 +163,8 @@ public class Board: Singleton<Board> {
 		return new Vector2(x, y);
 	}
 		
+
+
 	private void ShuffleBoard() {
 
 	}

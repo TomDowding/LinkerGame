@@ -5,5 +5,10 @@ using UnityEngine;
 public class BoardSquare : MonoBehaviour {
 
 	[SerializeField]
-	private TileSprite tileSprite;
+	private BoardSquareSprite boardSquareSprite;
+
+
+	public Vector2 GetSize() {
+		return boardSquareSprite.GetSize();
+	}
 }
