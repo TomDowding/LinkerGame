@@ -11,14 +11,19 @@ public class TileSprite : MonoBehaviour {
 	private float shrinkDuration = 0.25f;
 
 	[SerializeField]
-	private float srhinkScale = 0.8f;
+	private float shrinkScale = 0.8f;
 
 	private float shrinkTimer = 0.0f;
+
+	[SerializeField]
+	private float disappearDuration = 0.25f;
+
+	private float disappearTimer = 0.0f;
 
 
 	public void Reset(int tileType) {
 		transform.localScale = Vector3.one;
-		ShowNotInLink(tileType);
+		ShowNotInChain(tileType);
 	}
 
 	#region Hover state
@@ -42,8 +47,8 @@ public class TileSprite : MonoBehaviour {
 	private void DeltaShrink() {
 		float ease = Easing.EaseInOut(Mathf.Clamp01(shrinkTimer / shrinkDuration), EasingType.Quadratic);
 		Vector3 scale = transform.localScale;
-		scale.x = Mathf.Lerp(1, srhinkScale, ease);
-		scale.y = Mathf.Lerp(1, srhinkScale, ease);
+		scale.x = Mathf.Lerp(1, shrinkScale, ease);
+		scale.y = Mathf.Lerp(1, shrinkScale, ease);
 		transform.localScale = scale;
 	}
 	#endregion
@@ -70,20 +75,19 @@ public class TileSprite : MonoBehaviour {
 	private void DeltaGrow() {
 		float ease = Easing.EaseInOut(Mathf.Clamp01(shrinkTimer / shrinkDuration), EasingType.Quadratic);
 		Vector3 scale = transform.localScale;
-		scale.x = Mathf.Lerp(srhinkScale, 1, ease);
-		scale.y = Mathf.Lerp(srhinkScale, 1, ease);
+		scale.x = Mathf.Lerp(shrinkScale, 1, ease);
+		scale.y = Mathf.Lerp(shrinkScale, 1, ease);
 		transform.localScale = scale;
 	}
 	#endregion
 
 
-	#region Link state
-	public void ShowInLink(int tileType) {
+	#region In chain state
+	public void ShowInChain(int tileType) {
 		spriteRenderer.sprite = SpriteManager.Instance.OutlineSpriteForTileType(tileType);
 	}
 
-	public void ShowNotInLink(int tileType) {
-
+	public void ShowNotInChain(int tileType) {
 		spriteRenderer.sprite = SpriteManager.Instance.NormalSpriteForTileType(tileType);
 	}
 	#endregion

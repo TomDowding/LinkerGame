@@ -54,11 +54,14 @@ public class Board: Singleton<Board> {
 
 
 	void Awake () {
-
-	
+		
 	}
 
 	void Start () {
+
+	}
+
+	public void SetupForLevel(Level level) {
 
 		// Destroy our working prefabs instances in scene
 		for(int i = 0; i < boardSquareHolder.childCount; i++) {
@@ -68,14 +71,10 @@ public class Board: Singleton<Board> {
 			DestroyImmediate(tileHolder.GetChild(i).gameObject);
 		}
 
-		CreateInitialTiles();
-	}
-	
-	void Update () {
-		
+		CreateLevel(level);
 	}
 
-	private void CreateInitialTiles() {
+	private void CreateLevel(Level level) {
 
 		// Get the board square size from the dummy board square, to help with tile positioning
 		BoardSquare boardSquare = dummyBoardSquareObject.GetComponent<BoardSquare>();

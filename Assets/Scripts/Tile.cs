@@ -1,23 +1,27 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
-public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler {
+public class Tile : MonoBehaviour {
 
 	[SerializeField]
 	private TileSprite tileSprite;
 
-	public int tileType;
-	public BoardCoord boardCoord;
-	public bool inLink;
+	public int tileType {get; private set;}
+
+	public BoardCoord boardCoord {get; private set;}
+
+	private bool inChain;
+
+	private bool hovering;
 
 	void Start () {
 			
 	}
 		
 	public void SetupTile(int tileType, BoardCoord boardCoord) {
-		inLink = false;
+		inChain = false;
+		hovering = false;
 
 		this.boardCoord = boardCoord;
 		this.tileType = tileType;
@@ -25,21 +29,46 @@ public class Tile : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler {
 		tileSprite.Reset(tileType);
 	}
 		
-	public void OnPointerEnter(PointerEventData eventData) {
-		//Debug.Log("Touch enter " + boardCoord.Description());
+	public void AddToChain(Tile linkedToTile) {
+		Debug.Log("Adding tile to chain at " + boardCoord.Description());
 
-		tileSprite.ShowInLink(tileType);
-
-		tileSprite.ShowHover();
+		inChain = true;
+		tileSprite.ShowInChain(tileType);
 	}
 
-	public void OnPointerExit(PointerEventData eventData) {
-		//Debug.Log("Touch exit " + boardCoord.Description());
+	public void RemoveFromChain() {
+		Debug.Log("Removing tile from chain at " + boardCoord.Description());
 
-		tileSprite.ShowNoHover();
+		inChain = false;
+		tileSprite.Reset(tileType);
+	}
 
-		if(!inLink) {
-			tileSprite.ShowNotInLink(tileType);
+	public void Select() {
+		Debug.Log("Select tile at " + boardCoord.Description() + ", inChain: " + inChain);
+
+		if(inChain) {
+			// If the tile is already in a chain, we are going back into it.
+			// See if we should remove the tiles after it (undo)
+			GameManager.Instance.TryRemoveTilesAfterTile(this);
+		}
+		else {
+			// If not in a chain, see if we can add it.
+			// Hover state on a successful add only.
+			bool success = GameManager.Instance.TryAddTileToChain(this);
+			if(success) {
+				hovering = true;
+				tileSprite.ShowHover();
+			}
 		}
 	}
+
+	public void Deselect() {
+		Debug.Log("Deselect tile at " + boardCoord.Description() + ", inChain: " + inChain);
+
+		if(hovering) {
+			hovering = false;
+			tileSprite.ShowNoHover();
+		}
+	}
+
 }
