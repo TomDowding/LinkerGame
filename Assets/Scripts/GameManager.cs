@@ -11,6 +11,11 @@ public class GameManager : Singleton<GameManager> {
 
 	private ArrayList links;
 
+	[SerializeField]
+	private float tileDisappearDelay = 0.4f;
+
+	private const int minChainLength = 3;
+
 	public bool interactionEnabled {get; private set;}
 
 
@@ -22,27 +27,19 @@ public class GameManager : Singleton<GameManager> {
 		Level level = new Level();
 		StartLevel(level);
 	}
-		
+
+	#region Level
 	private void StartLevel(Level level) {
 
-		EmptyChain();
+		ResetChain();
 
 		Board.Instance.SetupForLevel(level);
 		interactionEnabled = true;
 	}
+	#endregion
 
-	public void EmptyChain() {
 
-		for(int i = links.Count - 1; i >= 0; i--) {
-			GameObject link = (GameObject) links[i];
-			DestroyImmediate(link);
-		}
-			
-		links.Clear();
-
-		chain.Clear();
-	}
-
+	#region Chain
 	public bool TryAddTileToChain(Tile tile) {
 		//Debug.Log("Try to add tile of type " + tile.tileType + " at coord " + tile.boardCoord.Description() + " to chain, " + chain.Count + " in chain");
 
@@ -109,17 +106,16 @@ public class GameManager : Singleton<GameManager> {
 		}
 	}
 
+	public void ResetChain() {
 
-	public void FinishedChaining() {
+		chain.Clear();
 
-		foreach(Tile tile in chain) {
-
-			tile.RemoveFromChain();
-		}
-
-		EmptyChain();
+		ClearLinks();
 	}
+	#endregion 
 
+
+	#region Links
 	private void AddLink(Tile fromTile, Tile toTile) {
 
 		// Create the link
@@ -143,4 +139,62 @@ public class GameManager : Singleton<GameManager> {
 		// Keep in array so we can remove them all later
 		links.Add(newLinkObject);
 	}
+
+	public void ClearLinks() {
+
+		for(int i = links.Count - 1; i >= 0; i--) {
+			GameObject link = (GameObject) links[i];
+			DestroyImmediate(link);
+		}
+
+		links.Clear();
+	}
+	#endregion
+
+
+	#region Complete chain
+	public void TryCompleteChain() {
+
+		if(chain.Count >= minChainLength) {
+			interactionEnabled = false;
+
+			StartCoroutine(CompleteChain());
+		}
+		else {
+
+			foreach(Tile tile in chain) {
+				tile.RemoveFromChain();
+			}
+
+			ResetChain();
+		}
+	}
+
+	public IEnumerator CompleteChain() {
+
+		ClearLinks();
+
+		foreach(Tile tile in chain) {
+
+			tile.RemoveFromBoard();
+
+			UIManager.Instance.AddScoreText(tile.transform.localPosition, 20);
+
+			yield return new WaitForSeconds(tileDisappearDelay);
+		}
+
+		yield return new WaitForSeconds(chain.Count * tileDisappearDelay);
+
+		// Temp code to put tiles back for now
+		foreach(Tile tile in chain) {
+			tile.Reset();
+		}
+
+		ResetChain();
+
+		interactionEnabled = true;
+	}
+
+
+	#endregion
 }

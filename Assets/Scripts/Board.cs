@@ -83,7 +83,7 @@ public class Board: Singleton<Board> {
 		// Find the appropriate board start point for our board size
 		// We want centered horizontally, but anchored to bottom of screen vertically
 		RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-		boardOrigin = new Vector2((boardSquareSize.x * boardSize.width) * -0.5f, (canvasRect.rect.size.y  * -0.5f) + 5);
+		boardOrigin = new Vector2((boardSquareSize.x * boardSize.width) * -0.5f, (canvasRect.rect.size.y  * -0.5f) + 15);
 
 		// Create an initial array of tiles
 		boardSquares = new BoardSquareSprite[boardSize.width, boardSize.height];

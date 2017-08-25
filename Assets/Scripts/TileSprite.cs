@@ -26,7 +26,7 @@ public class TileSprite : MonoBehaviour {
 		ShowNotInChain(tileType);
 	}
 
-	#region Hover state
+	#region Hover
 	public void ShowHover() {
 
 		shrinkTimer = 0.0f;
@@ -54,7 +54,7 @@ public class TileSprite : MonoBehaviour {
 	#endregion
 
 
-	#region No hover state
+	#region No hover
 	public void ShowNoHover() {
 
 		shrinkTimer = 0.0f;
@@ -82,13 +82,41 @@ public class TileSprite : MonoBehaviour {
 	#endregion
 
 
-	#region In chain state
+	#region In chain
 	public void ShowInChain(int tileType) {
 		spriteRenderer.sprite = SpriteManager.Instance.OutlineSpriteForTileType(tileType);
 	}
 
 	public void ShowNotInChain(int tileType) {
 		spriteRenderer.sprite = SpriteManager.Instance.NormalSpriteForTileType(tileType);
+	}
+	#endregion
+
+
+	#region Disappearing
+	public void ShowDisappear() {
+
+		disappearTimer = 0.0f;
+		StartCoroutine(DisappearCoroutine());
+	}
+
+	private IEnumerator DisappearCoroutine() {
+
+		while(disappearTimer < disappearDuration) {
+			disappearTimer = Mathf.Min(shrinkTimer += Time.deltaTime, disappearDuration);
+
+			DeltaDisappear();
+
+			yield return new WaitForEndOfFrame();
+		}
+	}
+
+	private void DeltaDisappear() {
+		float ease = Easing.EaseInOut(Mathf.Clamp01(disappearTimer / disappearDuration), EasingType.Quadratic);
+		Vector3 scale = transform.localScale;
+		scale.x = Mathf.Lerp(1, 0, ease);
+		scale.y = Mathf.Lerp(1, 0, ease);
+		transform.localScale = scale;
 	}
 	#endregion
 }

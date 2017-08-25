@@ -20,12 +20,17 @@ public class Tile : MonoBehaviour {
 	}
 		
 	public void SetupTile(int tileType, BoardCoord boardCoord) {
-		inChain = false;
-		hovering = false;
 
 		this.boardCoord = boardCoord;
 		this.tileType = tileType;
 
+		Reset();
+	}
+
+	public void Reset() {
+		
+		inChain = false;
+		hovering = false;
 		tileSprite.Reset(tileType);
 	}
 		
@@ -71,4 +76,7 @@ public class Tile : MonoBehaviour {
 		}
 	}
 
+	public void RemoveFromBoard() {
+		tileSprite.ShowDisappear();
+	}
 }

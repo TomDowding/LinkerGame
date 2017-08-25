@@ -12,21 +12,38 @@ public class TileTouch : MonoBehaviour,  IPointerEnterHandler, IPointerExitHandl
 
 	public void OnPointerEnter(PointerEventData eventData) {
 
+		if(!GameManager.Instance.interactionEnabled) {
+			return;
+		}
+
 		tile.Select();
 	}
 
 	public void OnPointerExit(PointerEventData eventData) {
+
+		if(!GameManager.Instance.interactionEnabled) {
+			return;
+		}
 
 		tile.Deselect();
 	}
 
 	public void OnPointerDown(PointerEventData eventData) {
 
+		if(!GameManager.Instance.interactionEnabled) {
+			return;
+		}
 	}
 
 	public void OnPointerUp(PointerEventData eventData) {
 
-		GameManager.Instance.FinishedChaining();
+		if(!GameManager.Instance.interactionEnabled) {
+			return;
+		}
+
+		tile.Deselect();
+
+		GameManager.Instance.TryCompleteChain();
 	}
 
 }
