@@ -20,6 +20,13 @@ public class GameManager : Singleton<GameManager> {
 	[SerializeField]
 	private float tileDisappearDelay = 0.4f;
 
+	[SerializeField]
+	private float tileDropDelay = 0.4f;
+
+	[SerializeField]
+	private float tileDropDuration = 0.25f;
+
+
 	private const int minChainLength = 3;
 
 	public bool interactionEnabled {get; private set;}
@@ -40,8 +47,6 @@ public class GameManager : Singleton<GameManager> {
 		ResetChain();
 
 		board.SetupForLevel(level);
-
-		interactionEnabled = true;
 	}
 	#endregion
 
@@ -113,11 +118,13 @@ public class GameManager : Singleton<GameManager> {
 		}
 	}
 
-	public void ResetChain() {
+	private void ResetChain() {
 
 		chain.Clear();
 
 		ClearLinks();
+
+		interactionEnabled = true;
 	}
 	#endregion 
 
@@ -147,7 +154,7 @@ public class GameManager : Singleton<GameManager> {
 		links.Add(newLinkObject);
 	}
 
-	public void ClearLinks() {
+	private void ClearLinks() {
 
 		for(int i = links.Count - 1; i >= 0; i--) {
 			GameObject link = (GameObject) links[i];
@@ -205,24 +212,40 @@ public class GameManager : Singleton<GameManager> {
 
 		// Get ready for next chain
 		ResetChain();
-		interactionEnabled = true;
 	}
 
 		
 	private IEnumerator DropTiles(ArrayList dropColumns) {
 
+		int mostRowsToDrop = 0;
+
 		for(int col = 0; col < dropColumns.Count; col++) {
 
 			ArrayList column = (ArrayList) dropColumns[col];
-		
-			for(int row = 0; row < column.Count; row++) {
 
-				Tile tile = (Tile) column[row];
-
-				tile.Drop(board.PositionForBoardCoord(tile.boardCoord));
-
-				yield return new WaitForSeconds(0.1f);
+			if(column.Count > mostRowsToDrop) {
+				mostRowsToDrop = column.Count;
 			}
+
+			StartCoroutine(DropColumn(column));
+		}
+
+		// Wait for columns to have dropped all their rows 
+		yield return new WaitForSeconds(mostRowsToDrop * tileDropDuration);
+
+		// Get ready for next chain
+		ResetChain();
+	}
+		
+	private IEnumerator DropColumn(ArrayList column) {
+
+		for(int row = 0; row < column.Count; row++) {
+
+			Tile tile = (Tile) column[row];
+
+			tile.Drop(board.PositionForBoardCoord(tile.boardCoord), tileDropDuration);
+
+			yield return new WaitForSeconds(tileDropDelay);
 		}
 	}
 	#endregion

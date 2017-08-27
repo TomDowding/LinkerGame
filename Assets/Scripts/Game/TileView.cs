@@ -25,9 +25,6 @@ public class TileView : MonoBehaviour {
 	[SerializeField]
 	private float disappearDuration = 0.25f;
 
-	[SerializeField]
-	private float dropDuration = 0.4f;
-
 
 	public void Reset(int tileType) {
 		transform.localScale = Vector3.one;
@@ -45,7 +42,7 @@ public class TileView : MonoBehaviour {
 		growShrinkAnimator.StartAnimation(spriteTransform, spriteTransform.localScale, Vector2.one, shrinkDuration);
 	}
 		
-	public void ShowDrop(Vector2 toPosition) {
+	public void ShowDrop(Vector2 toPosition, float dropDuration) {
 
 		dropAnimator.StartAnimation(transform, transform.localPosition, toPosition, dropDuration);
 	}
