@@ -103,7 +103,7 @@ public class TileSprite : MonoBehaviour {
 	private IEnumerator DisappearCoroutine() {
 
 		while(disappearTimer < disappearDuration) {
-			disappearTimer = Mathf.Min(shrinkTimer += Time.deltaTime, disappearDuration);
+			disappearTimer = Mathf.Min(disappearTimer += Time.deltaTime, disappearDuration);
 
 			DeltaDisappear();
 

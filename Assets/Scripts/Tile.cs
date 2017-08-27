@@ -7,9 +7,12 @@ public class Tile : MonoBehaviour {
 	[SerializeField]
 	private TileSprite tileSprite;
 
+	[SerializeField]
+	private MoveAnimator moveAnimator;
+
 	public int tileType {get; private set;}
 
-	public BoardCoord boardCoord {get; private set;}
+	public BoardCoord boardCoord;
 
 	private bool inChain;
 
@@ -19,10 +22,12 @@ public class Tile : MonoBehaviour {
 			
 	}
 		
-	public void SetupTile(int tileType, BoardCoord boardCoord) {
+	public void Setup(int tileType, BoardCoord boardCoord) {
 
 		this.boardCoord = boardCoord;
 		this.tileType = tileType;
+
+		gameObject.name = "Tile_" + boardCoord.col + "_" + boardCoord.row;
 
 		Reset();
 	}
@@ -35,21 +40,41 @@ public class Tile : MonoBehaviour {
 	}
 		
 	public void AddToChain(Tile linkedToTile) {
-		Debug.Log("Adding tile to chain at " + boardCoord.Description());
+		Debug.Log("Adding tile to chain at " + boardCoord.description);
 
 		inChain = true;
 		tileSprite.ShowInChain(tileType);
 	}
 
 	public void RemoveFromChain() {
-		Debug.Log("Removing tile from chain at " + boardCoord.Description());
+		Debug.Log("Removing tile from chain at " + boardCoord.description);
 
 		inChain = false;
 		tileSprite.Reset(tileType);
 	}
 
+	public void RemoveFromBoard() {
+		Debug.Log("Removing tile from board at " + boardCoord.description);
+
+		tileSprite.ShowDisappear();
+	}
+
+	public void Drop(Vector2 toPosition) {
+		Debug.Log("Dropping tile at " + boardCoord.description + " to " + toPosition);
+
+		moveAnimator.Move(transform.localPosition, toPosition, 1.0f);
+	}
+
+
+
+	#region Called via touch input
 	public void Select() {
-		Debug.Log("Select tile at " + boardCoord.Description() + ", inChain: " + inChain);
+		
+		if(!GameManager.Instance.interactionEnabled) {
+			return;
+		}
+
+		Debug.Log("Select tile at " + boardCoord.description + ", inChain: " + inChain);
 
 		if(inChain) {
 			// If the tile is already in a chain, we are going back into it.
@@ -68,7 +93,12 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void Deselect() {
-		Debug.Log("Deselect tile at " + boardCoord.Description() + ", inChain: " + inChain);
+		
+		if(!GameManager.Instance.interactionEnabled) {
+			return;
+		}
+
+		Debug.Log("Deselect tile at " + boardCoord.description + ", inChain: " + inChain);
 
 		if(hovering) {
 			hovering = false;
@@ -76,7 +106,12 @@ public class Tile : MonoBehaviour {
 		}
 	}
 
-	public void RemoveFromBoard() {
-		tileSprite.ShowDisappear();
+	public void LetGo() {
+		if(!GameManager.Instance.interactionEnabled) {
+			return;
+		}
+
+		GameManager.Instance.TryCompleteChain();
 	}
+	#endregion
 }

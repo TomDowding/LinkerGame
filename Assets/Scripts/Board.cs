@@ -2,29 +2,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+#region Custom structs to help define board properties
 [System.Serializable]
 public struct BoardSize {
-	// Unit is number of squares
-	public int width;	
-	public int height;
+	public int numCols;	
+	public int numRows;
 }
 
 public struct BoardCoord {
-	// A coordinate position on the board, in number of squares
-	public int x;
-	public int y;
-
-	public BoardCoord(int x, int y) {
-		this.x = x;
-		this.y = y;
+	public int col;
+	public int row;
+	public string description {
+		get {return "(" + col + "," + row + ")";}
+		private set{;}
 	}
 
-	public string Description() {
-		return "(" + x + "," + y + ")";
+	public BoardCoord(int col, int row) {
+		this.col = col;
+		this.row = row;
 	}
 }
 
-public class Board: Singleton<Board> {
+public struct BoardSquareSize {
+	public float width;	
+	public float height;
+}
+#endregion
+
+
+public class Board: MonoBehaviour {
 
 	[SerializeField]
 	private GameObject dummyBoardSquareObject;
@@ -46,9 +53,9 @@ public class Board: Singleton<Board> {
 
 	private Tile[,] tiles;
 
-	private BoardSquareSprite[,] boardSquares;
+	private BoardSquare[,] boardSquares;
 
-	private Vector2 boardSquareSize;
+	private BoardSquareSize boardSquareSize;
 
 	private Vector2 boardOrigin;
 
@@ -78,70 +85,67 @@ public class Board: Singleton<Board> {
 		// Get the board square size from the dummy board square, to help with tile positioning
 		BoardSquare boardSquare = dummyBoardSquareObject.GetComponent<BoardSquare>();
 		boardSquareSize = boardSquare.GetSize();
-		Debug.Log("boardSquareSize size: " + boardSquareSize.x + ", " + boardSquareSize.y);
+		Debug.Log("boardSquareSize size: " + boardSquareSize.width + ", " + boardSquareSize.height);
 	
 		// Find the appropriate board start point for our board size
 		// We want centered horizontally, but anchored to bottom of screen vertically
 		RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-		boardOrigin = new Vector2((boardSquareSize.x * boardSize.width) * -0.5f, (canvasRect.rect.size.y  * -0.5f) + 15);
+		boardOrigin = new Vector2((boardSquareSize.width * boardSize.numCols) * -0.5f, (canvasRect.rect.size.y  * -0.5f) + 15);
 
 		// Create an initial array of tiles
-		boardSquares = new BoardSquareSprite[boardSize.width, boardSize.height];
-		tiles = new Tile[boardSize.width, boardSize.height];
+		boardSquares = new BoardSquare[boardSize.numCols, boardSize.numRows];
+		tiles = new Tile[boardSize.numCols, boardSize.numRows];
 
-		for (int y = 0; y < boardSize.height; y++) {
-			for (int x = 0; x < boardSize.width; x++) {
+		for (int row = 0; row < boardSize.numRows; row++) {
+			for (int col = 0; col < boardSize.numCols; col++) {
 
 				// TODO: Check if want a tile here or not (different levels)
 
+				if(col == 2 && row % 2 == 0) {
+					continue;
+				}
 
+				BoardCoord boardCoord = new BoardCoord(col, row);
 
-				BoardCoord boardCoord = new BoardCoord(x, y);
+				boardSquares[col, row] = CreateBoardSquare(boardCoord);
 
-				boardSquares[x, y] = CreateBoardSquare(boardCoord, boardSquareSize, boardOrigin);
-
-				tiles[x, y] = CreateTile(boardCoord, boardSquareSize, boardOrigin);
+				tiles[col, row] = CreateTile(boardCoord);
 			}
 		}
 	}
 
-	private BoardSquareSprite CreateBoardSquare(BoardCoord boardCoord, Vector2 tileSize, Vector2 boardStartPos) {
+	private BoardSquare CreateBoardSquare(BoardCoord boardCoord) {
 
-		Vector2 tilePos = PositionForTile(tileSize, boardCoord);
-		tilePos += boardStartPos;
-
+		Vector2 pos = PositionForBoardCoord(boardCoord);
+	
 		GameObject newBoardSquareObject = Instantiate(dummyBoardSquareObject) as GameObject;
 		newBoardSquareObject.SetActive(true);
-		newBoardSquareObject.name = "BoardSquare_" + boardCoord.x + "_" + boardCoord.y;
-
+	
 		Transform newBoardSquareTransform = newBoardSquareObject.transform;
 		newBoardSquareTransform.parent = boardSquareHolder;
-		newBoardSquareTransform.localPosition = new Vector3(tilePos.x, tilePos.y, 0);
+		newBoardSquareTransform.localPosition = new Vector3(pos.x, pos.y, 0);
 		newBoardSquareTransform.localScale = Vector3.one;
 
-		BoardSquareSprite newBoardSquareSprite = newBoardSquareObject.GetComponent<BoardSquareSprite>();
-		//newBoardSquareSprite.SetSprite(tileSprites[tileType]);
-
-		return newBoardSquareSprite;
+		BoardSquare newBoardSquare = newBoardSquareObject.GetComponent<BoardSquare>();
+		newBoardSquare.Setup(boardCoord);
+	
+		return newBoardSquare;
 	}
 
-	private Tile CreateTile(BoardCoord boardCoord, Vector2 tileSize, Vector2 boardStartPos) {
+	private Tile CreateTile(BoardCoord boardCoord) {
 		
-		Vector2 tilePos = PositionForTile(tileSize, boardCoord);
-		tilePos += boardStartPos;
-
+		Vector2 tilePos = PositionForBoardCoord(boardCoord);
+	
 		GameObject newTileObject = Instantiate(dummyTileObject) as GameObject;
 		newTileObject.SetActive(true);
-		newTileObject.name = "Tile_" + boardCoord.x + "_" + boardCoord.y;
-
+	
 		Transform newTileTransform = newTileObject.transform;
 		newTileTransform.parent = tileHolder;
 		newTileTransform.localPosition = new Vector3(tilePos.x, tilePos.y, 0);
 		newTileTransform.localScale = Vector3.one;
 
 		Tile newTile = newTileObject.GetComponent<Tile>();
-		int tileType = GetRandomTileType();
-		newTile.SetupTile(tileType, boardCoord);
+		newTile.Setup(GetRandomTileType(), boardCoord);
 
 		return newTile;
 	}
@@ -150,11 +154,69 @@ public class Board: Singleton<Board> {
 		return Random.Range(0, SpriteManager.Instance.NumTileTypes());
 	}
 		
-	private Vector2 PositionForTile(Vector2 tileSize, BoardCoord boardCoord) {
-		return new Vector2((boardCoord.x * tileSize.x) + (tileSize.x * 0.5f), (boardCoord.y * tileSize.y) + (tileSize.y * 0.5f));
+	public Vector2 PositionForBoardCoord(BoardCoord boardCoord) {
+		Vector2 pos = new Vector2((boardCoord.col * boardSquareSize.width) + (boardSquareSize.width * 0.5f), (boardCoord.row * boardSquareSize.height) + (boardSquareSize.height * 0.5f));
+		pos += boardOrigin;
+		return pos;
 	}
 		
-	private void ShuffleBoard() {
+	public void RemoveTile(Tile tile) {
+		// Creates a 'gap' in the tiles array
+		tiles[tile.boardCoord.col, tile.boardCoord.row] = null;
+	}
 
+	private void MoveTile(Tile tile, BoardCoord fromCoord, BoardCoord toCoord) {
+		tile.Setup(tile.tileType, toCoord);
+		tiles[toCoord.col, toCoord.row] = tile;
+		tiles[fromCoord.col, fromCoord.row] = null;
+	}
+
+	public ArrayList FillGaps() {
+
+		// This array will hold all the tiles that have been moved, split into ordered columns.
+		// We use this for animating the drop down after we change the data model here.
+		ArrayList columns = new ArrayList();
+
+		for(int col = 0; col < boardSize.numCols; col++) {
+
+			ArrayList column = new ArrayList();
+			columns.Add(column);
+
+			for(int row = 0; row < boardSize.numRows; row++) {
+
+				// A gap exists if there is a board square but no tile
+				if(boardSquares[col, row] != null && tiles[col, row] == null) {
+
+					Debug.Log("Gap at (" + col + ", " + row + ")");
+
+					// Start scanning upwards to find first tile above gap
+					for(int scanRow = row + 1; scanRow < boardSize.numRows; scanRow++) {
+						
+						if(tiles[col, scanRow] != null) {
+
+							// Move found tile to the gap
+							Tile foundTile = tiles[col, scanRow];
+							MoveTile(foundTile,  new BoardCoord(col, scanRow),  new BoardCoord(col, row));
+							column.Add(foundTile);
+
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		for(int col = 0; col < columns.Count; col++) {
+
+			ArrayList column = (ArrayList) columns[col];
+
+			for(int row = 0; row < column.Count; row++) {
+
+				Debug.Log("Tile to drop at (" + col + ", " + row + ")");
+			}
+
+		}
+
+		return columns;
 	}
 }

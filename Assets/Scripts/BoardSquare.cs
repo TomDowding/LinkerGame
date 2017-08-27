@@ -8,7 +8,13 @@ public class BoardSquare : MonoBehaviour {
 	private BoardSquareSprite boardSquareSprite;
 
 
-	public Vector2 GetSize() {
+	public void Setup(BoardCoord boardCoord) {
+
+		gameObject.name = "BoardSquare_" + boardCoord.col + "_" + boardCoord.row;
+	}
+
+	public BoardSquareSize GetSize() {
+		
 		return boardSquareSprite.GetSize();
 	}
 }

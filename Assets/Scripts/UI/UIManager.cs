@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIManager : Singleton<UIManager> {
+public class UIManager : MonoBehaviour {
 
 	[SerializeField]
 	private GameObject dummyScoreObject;
@@ -21,7 +21,7 @@ public class UIManager : Singleton<UIManager> {
 
 		// Attach link to the from tile
 		Transform newScoreTextTransform = newScoreTextObject.transform;
-		newScoreTextTransform.parent = scoreTextHolder;
+		newScoreTextTransform.SetParent(scoreTextHolder, false);
 		newScoreTextTransform.localScale = Vector3.one;
 		newScoreTextTransform.localPosition = position;
 

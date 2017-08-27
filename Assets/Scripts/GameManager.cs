@@ -5,6 +5,12 @@ using UnityEngine;
 public class GameManager : Singleton<GameManager> {
 
 	[SerializeField]
+	private Board board;
+
+	[SerializeField]
+	private UIManager uiManager;
+
+	[SerializeField]
 	private GameObject dummyLinkObject;
 
 	private ArrayList chain;
@@ -33,7 +39,8 @@ public class GameManager : Singleton<GameManager> {
 
 		ResetChain();
 
-		Board.Instance.SetupForLevel(level);
+		board.SetupForLevel(level);
+
 		interactionEnabled = true;
 	}
 	#endregion
@@ -53,7 +60,7 @@ public class GameManager : Singleton<GameManager> {
 		Tile lastTile = (Tile) chain[chain.Count - 1];
 	
 		if(lastTile.tileType == tile.tileType) {
-			float distance = Vector2.Distance(new Vector2(lastTile.boardCoord.x, lastTile.boardCoord.y), new Vector2(tile.boardCoord.x, tile.boardCoord.y));
+			float distance = Vector2.Distance(new Vector2(lastTile.boardCoord.col, lastTile.boardCoord.row), new Vector2(tile.boardCoord.col, tile.boardCoord.row));
 			if(distance < 1.5f) { 
 				AddTileToChain(tile, lastTile);
 				return true;
@@ -121,7 +128,7 @@ public class GameManager : Singleton<GameManager> {
 		// Create the link
 		GameObject newLinkObject = Instantiate(dummyLinkObject) as GameObject;
 		newLinkObject.SetActive(true);
-		newLinkObject.name = "Linker_" + fromTile.boardCoord.Description() + "_to_" + toTile.boardCoord.Description();
+		newLinkObject.name = "Linker_" + fromTile.boardCoord.description + "_to_" + toTile.boardCoord.description;
 
 		// Attach link to the from tile
 		Transform newLinkTransform = newLinkObject.transform;
@@ -130,8 +137,8 @@ public class GameManager : Singleton<GameManager> {
 		newLinkTransform.localPosition = Vector3.zero;
 
 		// Rotate link to point between two tiles
-		Vector2 v1 = new Vector2(fromTile.boardCoord.x, fromTile.boardCoord.y);
-		Vector2 v2 = new Vector2(toTile.boardCoord.x, toTile.boardCoord.y);
+		Vector2 v1 = new Vector2(fromTile.boardCoord.col, fromTile.boardCoord.row);
+		Vector2 v2 = new Vector2(toTile.boardCoord.col, toTile.boardCoord.row);
 		float angle = Mathf.Atan2(v1.y - v2.y, v1.x - v2.x) * Mathf.Rad2Deg;
 		angle += 180;
 		newLinkTransform.eulerAngles = new Vector3(0, 0, angle);
@@ -170,31 +177,56 @@ public class GameManager : Singleton<GameManager> {
 		}
 	}
 
-	public IEnumerator CompleteChain() {
+	private IEnumerator CompleteChain() {
 
 		ClearLinks();
 
+		// Remove tiles in the chain 
 		foreach(Tile tile in chain) {
 
+			// Visual remove
 			tile.RemoveFromBoard();
 
-			UIManager.Instance.AddScoreText(tile.transform.localPosition, 20);
+			uiManager.AddScoreText(tile.transform.localPosition, 20);
 
 			yield return new WaitForSeconds(tileDisappearDelay);
+
+			// Data remove
+			board.RemoveTile(tile);
+
+			Destroy(tile.gameObject);
 		}
 
-		yield return new WaitForSeconds(chain.Count * tileDisappearDelay);
+		yield return new WaitForSeconds(tileDisappearDelay);
 
-		// Temp code to put tiles back for now
-		foreach(Tile tile in chain) {
-			tile.Reset();
-		}
+		// Fill in the gaps created by missing tiles
+		ArrayList dropColumns = board.FillGaps();
+		yield return StartCoroutine(DropTiles(dropColumns));
 
+		// Get ready for next chain
 		ResetChain();
-
 		interactionEnabled = true;
 	}
 
+		
+	private IEnumerator DropTiles(ArrayList dropColumns) {
+		Debug.Log("Dropping tiles from " + dropColumns.Count + " columns");
 
+		for(int col = 0; col < dropColumns.Count; col++) {
+
+			ArrayList column = (ArrayList) dropColumns[col];
+
+			Debug.Log("Column " + col + " has " + column.Count + " tiles to drop");
+
+			for(int row = 0; row < column.Count; row++) {
+
+				Tile tile = (Tile) column[row];
+
+				tile.Drop(board.PositionForBoardCoord(tile.boardCoord));
+
+				yield return new WaitForSeconds(0.1f);
+			}
+		}
+	}
 	#endregion
 }

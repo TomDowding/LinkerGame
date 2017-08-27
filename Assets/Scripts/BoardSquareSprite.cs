@@ -10,8 +10,11 @@ public class BoardSquareSprite : MonoBehaviour {
 		spriteRenderer.sprite = sprite;
 	}
 
-	public Vector2 GetSize() {
-		return spriteRenderer.bounds.size;
+	public BoardSquareSize GetSize() {
+		BoardSquareSize boardSquareSize = new BoardSquareSize();
+		boardSquareSize.width = spriteRenderer.bounds.size.x;
+		boardSquareSize.height = spriteRenderer.bounds.size.y;
+		return boardSquareSize;
 	}
 
 }
