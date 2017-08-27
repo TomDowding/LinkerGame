@@ -206,17 +206,6 @@ public class Board: MonoBehaviour {
 			}
 		}
 
-		for(int col = 0; col < columns.Count; col++) {
-
-			ArrayList column = (ArrayList) columns[col];
-
-			for(int row = 0; row < column.Count; row++) {
-
-				Debug.Log("Tile to drop at (" + col + ", " + row + ")");
-			}
-
-		}
-
 		return columns;
 	}
 }

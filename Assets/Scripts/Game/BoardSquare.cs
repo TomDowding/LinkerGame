@@ -5,7 +5,7 @@ using UnityEngine;
 public class BoardSquare : MonoBehaviour {
 
 	[SerializeField]
-	private BoardSquareSprite boardSquareSprite;
+	private BoardSquareView boardSquareView;
 
 
 	public void Setup(BoardCoord boardCoord) {
@@ -15,6 +15,6 @@ public class BoardSquare : MonoBehaviour {
 
 	public BoardSquareSize GetSize() {
 		
-		return boardSquareSprite.GetSize();
+		return boardSquareView.GetSpriteSize();
 	}
 }

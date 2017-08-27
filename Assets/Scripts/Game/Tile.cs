@@ -5,14 +5,12 @@ using UnityEngine;
 public class Tile : MonoBehaviour {
 
 	[SerializeField]
-	private TileSprite tileSprite;
+	private TileView tileView;
 
-	[SerializeField]
-	private MoveAnimator moveAnimator;
 
 	public int tileType {get; private set;}
 
-	public BoardCoord boardCoord;
+	public BoardCoord boardCoord {get; private set;}
 
 	private bool inChain;
 
@@ -36,36 +34,35 @@ public class Tile : MonoBehaviour {
 		
 		inChain = false;
 		hovering = false;
-		tileSprite.Reset(tileType);
+		tileView.Reset(tileType);
 	}
 		
 	public void AddToChain(Tile linkedToTile) {
 		Debug.Log("Adding tile to chain at " + boardCoord.description);
 
 		inChain = true;
-		tileSprite.ShowInChain(tileType);
+		tileView.ShowInChain(tileType);
 	}
 
 	public void RemoveFromChain() {
 		Debug.Log("Removing tile from chain at " + boardCoord.description);
 
 		inChain = false;
-		tileSprite.Reset(tileType);
+		tileView.Reset(tileType);
 	}
 
 	public void RemoveFromBoard() {
 		Debug.Log("Removing tile from board at " + boardCoord.description);
 
-		tileSprite.ShowDisappear();
+		tileView.ShowDisappear();
 	}
 
 	public void Drop(Vector2 toPosition) {
 		Debug.Log("Dropping tile at " + boardCoord.description + " to " + toPosition);
 
-		moveAnimator.Move(transform.localPosition, toPosition, 1.0f);
+		tileView.ShowDrop(toPosition);
 	}
-
-
+		
 
 	#region Called via touch input
 	public void Select() {
@@ -87,7 +84,7 @@ public class Tile : MonoBehaviour {
 			bool success = GameManager.Instance.TryAddTileToChain(this);
 			if(success) {
 				hovering = true;
-				tileSprite.ShowHover();
+				tileView.ShowHover();
 			}
 		}
 	}
@@ -102,7 +99,7 @@ public class Tile : MonoBehaviour {
 
 		if(hovering) {
 			hovering = false;
-			tileSprite.ShowNoHover();
+			tileView.ShowNoHover();
 		}
 	}
 

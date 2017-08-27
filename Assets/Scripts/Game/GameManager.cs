@@ -210,14 +210,11 @@ public class GameManager : Singleton<GameManager> {
 
 		
 	private IEnumerator DropTiles(ArrayList dropColumns) {
-		Debug.Log("Dropping tiles from " + dropColumns.Count + " columns");
 
 		for(int col = 0; col < dropColumns.Count; col++) {
 
 			ArrayList column = (ArrayList) dropColumns[col];
-
-			Debug.Log("Column " + col + " has " + column.Count + " tiles to drop");
-
+		
 			for(int row = 0; row < column.Count; row++) {
 
 				Tile tile = (Tile) column[row];
