@@ -171,7 +171,7 @@ public class Board: MonoBehaviour {
 		tiles[fromCoord.col, fromCoord.row] = null;
 	}
 
-	public ArrayList FillGaps() {
+	public ArrayList FillGapsWithExistingTiles() {
 
 		// This array will hold all the tiles that have been moved, split into ordered columns.
 		// We use this for animating the drop down after we change the data model here.
@@ -187,8 +187,6 @@ public class Board: MonoBehaviour {
 				// A gap exists if there is a board square but no tile
 				if(boardSquares[col, row] != null && tiles[col, row] == null) {
 
-					Debug.Log("Gap at (" + col + ", " + row + ")");
-
 					// Start scanning upwards to find first tile above gap
 					for(int scanRow = row + 1; scanRow < boardSize.numRows; scanRow++) {
 						
@@ -202,6 +200,39 @@ public class Board: MonoBehaviour {
 							break;
 						}
 					}
+				}
+			}
+		}
+
+		return columns;
+	}
+
+	public ArrayList FillGapsWithNewTiles() {
+
+		// This array will hold all the new tiles, split into ordered columns.
+		// We use this for animating the drop down after we change the data model here.
+		ArrayList columns = new ArrayList();
+
+		for(int col = 0; col < boardSize.numCols; col++) {
+		
+			ArrayList column = new ArrayList();
+			columns.Add(column);
+
+			// For each column, scan from top to bottom filling in gaps with new tiles.
+			// Can stop when we find an existing tile.
+			for(int row = boardSize.numRows - 1; row >= 0; row--) {
+
+				if(tiles[col, row] != null) {
+					break;
+				}
+
+				if(boardSquares[col, row] != null) {
+					Debug.Log("Need new tile at (" + col + ", " + row + ")");
+					Tile newTile = CreateTile(new BoardCoord(col, row));
+					tiles[col, row] = newTile;
+					column.Add(newTile);
+
+					newTile.transform.localPosition = PositionForBoardCoord(new BoardCoord(col, boardSize.numRows + 1));
 				}
 			}
 		}

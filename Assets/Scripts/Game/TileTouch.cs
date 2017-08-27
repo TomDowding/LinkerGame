@@ -12,11 +12,14 @@ public class TileTouch : MonoBehaviour,  IPointerEnterHandler, IPointerExitHandl
 
 	public void OnPointerEnter(PointerEventData eventData) {
 
+		Debug.Log("OnPointerEnter " + tile.boardCoord.description);
 
 		tile.Select();
 	}
 
 	public void OnPointerExit(PointerEventData eventData) {
+
+		Debug.Log("OnPointerExit " + tile.boardCoord.description);
 
 		tile.Deselect();
 	}
@@ -26,6 +29,8 @@ public class TileTouch : MonoBehaviour,  IPointerEnterHandler, IPointerExitHandl
 	}
 
 	public void OnPointerUp(PointerEventData eventData) {
+
+		Debug.Log("OnPointerUp " + tile.boardCoord.description);
 
 		tile.Deselect();
 
