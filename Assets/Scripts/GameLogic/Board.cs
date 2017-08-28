@@ -100,28 +100,27 @@ public class Board: MonoBehaviour {
 		RectTransform canvasRect = canvas.GetComponent<RectTransform>();
 		boardOrigin = new Vector2((boardSquareSize.width * boardSize.numCols) * -0.5f, (canvasRect.rect.size.y  * -0.5f) + 15);
 
-		// Create an initial array of tiles
+		// Create an initial array of board squares and tiles
 		boardSquares = new BoardSquare[boardSize.numCols, boardSize.numRows];
 		tiles = new Tile[boardSize.numCols, boardSize.numRows];
 
 		for (int row = 0; row < boardSize.numRows; row++) {
 			for (int col = 0; col < boardSize.numCols; col++) {
 
-				// Check the level data tiles to see what we want at this coordinate
-				if(level.tiles[col, row] == 0) {
-					continue;
-				}
-
 				BoardCoord boardCoord = new BoardCoord(col, row);
 
-				boardSquares[col, row] = CreateBoardSquare(boardCoord);
+				BoardSquareType boardSquareType = (BoardSquareType) level.tiles[col, row];
 
-				tiles[col, row] = CreateTile(boardCoord);
+				boardSquares[col, row] = CreateBoardSquare(boardCoord, boardSquareType);
+
+				if(boardSquareType != BoardSquareType.Blocker) {
+					tiles[col, row] = CreateTile(boardCoord);
+				}
 			}
 		}
 	}
 
-	private BoardSquare CreateBoardSquare(BoardCoord boardCoord) {
+	private BoardSquare CreateBoardSquare(BoardCoord boardCoord, BoardSquareType boardSquareType) {
 
 		Vector2 pos = PositionForBoardCoord(boardCoord);
 	
@@ -134,7 +133,7 @@ public class Board: MonoBehaviour {
 		newBoardSquareTransform.localScale = Vector3.one;
 
 		BoardSquare newBoardSquare = newBoardSquareObject.GetComponent<BoardSquare>();
-		newBoardSquare.Setup(boardCoord);
+		newBoardSquare.Setup(boardCoord, boardSquareType);
 	
 		return newBoardSquare;
 	}
@@ -191,10 +190,10 @@ public class Board: MonoBehaviour {
 
 			for(int row = 0; row < boardSize.numRows; row++) {
 
-				// A gap exists if there is a board square but no tile
-				if(boardSquares[col, row] != null && tiles[col, row] == null) {
+				// A gap exists if there is a normal board square but no tile
+				if(boardSquares[col, row].boardSquareType == BoardSquareType.Normal && tiles[col, row] == null) {
 
-					// Start scanning upwards to find first tile above gap
+					// Scan upwards to find first tile above gap
 					for(int scanRow = row + 1; scanRow < boardSize.numRows; scanRow++) {
 						
 						if(tiles[col, scanRow] != null) {
@@ -224,45 +223,26 @@ public class Board: MonoBehaviour {
 		
 			ArrayList column = new ArrayList();
 			columns.Add(column);
-
-
-
+		
+			// Scan from bottom to top looking for any remaining normal board squares with no tile
 			for(int row = 0; row < boardSize.numRows; row++) {
 
 				if(tiles[col, row] != null) {
 					continue;
 				}
 
-				if(boardSquares[col, row] != null) {
-					Debug.Log("Need new tile at (" + col + ", " + row + ")");
+				if(boardSquares[col, row].boardSquareType == BoardSquareType.Normal) {
+
+					// Put in the new tile at this coord
 					Tile newTile = CreateTile(new BoardCoord(col, row));
 					tiles[col, row] = newTile;
 					column.Add(newTile);
 				
+					// Set the appearance so it is ready to drop in to place
 					newTile.PrepareForNewDrop();
 					newTile.transform.localPosition = PositionForBoardCoord(new BoardCoord(col, boardSize.numRows + 1));
 				}
 			}
-
-			/*
-			// For each column, scan from top to bottom filling in gaps with new tiles.
-			// Can stop when we find an existing tile.
-			for(int row = boardSize.numRows - 1; row >= 0; row--) {
-
-				if(tiles[col, row] != null) {
-					break;
-				}
-
-				if(boardSquares[col, row] != null) {
-					Debug.Log("Need new tile at (" + col + ", " + row + ")");
-					Tile newTile = CreateTile(new BoardCoord(col, row));
-					tiles[col, row] = newTile;
-					column.Add(newTile);
-
-					newTile.transform.localPosition = PositionForBoardCoord(new BoardCoord(col, boardSize.numRows + 1));
-				}
-			}
-			//*/
 		}
 
 		return columns;

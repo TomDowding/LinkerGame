@@ -6,8 +6,18 @@ public class BoardSquareView : MonoBehaviour {
 
 	public SpriteRenderer spriteRenderer;
 
-	public void SetSprite(Sprite sprite) {
-		spriteRenderer.sprite = sprite;
+	public void SetSpriteForBoardSquare(BoardSquare boardSquare) {
+		
+		spriteRenderer.sprite = SpriteServer.Instance.BoardSquareSpriteForType(boardSquare.boardSquareType);
+
+		if(boardSquare.boardSquareType == BoardSquareType.Normal) {
+			spriteRenderer.sortingLayerName = "Board";
+			spriteRenderer.sortingOrder = 0;
+		}
+		else {
+			spriteRenderer.sortingLayerName = "Blockers";
+			spriteRenderer.sortingOrder = 0;
+		}
 	}
 
 	public BoardSquareSize GetSpriteSize() {

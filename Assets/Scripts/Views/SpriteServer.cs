@@ -13,7 +13,6 @@ public class SpriteServer: Singleton<SpriteServer> {
 	[SerializeField] 
 	private Sprite[] boardSquareSprites;
 
-
 	public int NumTileTypes() {
 		return tileSprites.Length;
 	}
@@ -32,5 +31,15 @@ public class SpriteServer: Singleton<SpriteServer> {
 			return null;
 		}
 		return tileOutlineSprites[type];
+	}
+
+	public Sprite BoardSquareSpriteForType(BoardSquareType boardSquareType) {
+
+		if(boardSquareType == BoardSquareType.Normal) {
+			return boardSquareSprites[1];
+		}
+		else {
+			return boardSquareSprites[0];
+		}
 	}
 }
