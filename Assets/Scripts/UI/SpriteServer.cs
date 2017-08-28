@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpriteManager: Singleton<SpriteManager> {
+public class SpriteServer: Singleton<SpriteServer> {
 
 	[SerializeField] 
 	private Sprite[] tileSprites;

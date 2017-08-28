@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FloatAndFade : MonoBehaviour {
+public class TextFloatAndFade : MonoBehaviour {
 
 	[SerializeField]
 	private float duration = 0.25f;

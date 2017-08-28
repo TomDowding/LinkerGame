@@ -57,10 +57,16 @@ public class Tile : MonoBehaviour {
 		tileView.ShowDisappear();
 	}
 
-	public void Drop(Vector2 toPosition, float dropDuration) {
+	public void Drop(Vector2 toPosition) {
 		Debug.Log("Dropping tile at " + boardCoord.description + " to " + toPosition);
 
-		tileView.ShowDrop(toPosition, dropDuration);
+		tileView.ShowVisible();
+
+		tileView.ShowDrop(toPosition);
+	}
+
+	public void PrepareForNewDrop() {
+		tileView.ShowInvisible();
 	}
 		
 

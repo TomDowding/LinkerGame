@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EaseAnimator : MonoBehaviour {
+public class Easer: MonoBehaviour {
 
 	protected float timer = 0.0f;
 	protected float duration;
-	protected Vector3 fromVec;
-	protected Vector3 toVec;
+	protected Vector4 fromVec;
+	protected Vector4 toVec;
 	protected Transform t;
 
-	public void StartAnimation(Transform t, Vector3 fromVec, Vector3 toVec, float duration) {
+	public void StartAnimation(Transform t, Vector4 fromVec, Vector4 toVec, float duration) {
+
 		this.t = t;
 		this.fromVec = fromVec;
 		this.toVec = toVec;

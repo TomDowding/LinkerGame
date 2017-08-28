@@ -151,7 +151,7 @@ public class Board: MonoBehaviour {
 	}
 
 	private int GetRandomTileType() {
-		return Random.Range(0, SpriteManager.Instance.NumTileTypes());
+		return Random.Range(0, SpriteServer.Instance.NumTileTypes());
 	}
 		
 	public Vector2 PositionForBoardCoord(BoardCoord boardCoord) {
@@ -218,6 +218,26 @@ public class Board: MonoBehaviour {
 			ArrayList column = new ArrayList();
 			columns.Add(column);
 
+
+
+			for(int row = 0; row < boardSize.numRows; row++) {
+
+				if(tiles[col, row] != null) {
+					continue;
+				}
+
+				if(boardSquares[col, row] != null) {
+					Debug.Log("Need new tile at (" + col + ", " + row + ")");
+					Tile newTile = CreateTile(new BoardCoord(col, row));
+					tiles[col, row] = newTile;
+					column.Add(newTile);
+				
+					newTile.PrepareForNewDrop();
+					newTile.transform.localPosition = PositionForBoardCoord(new BoardCoord(col, boardSize.numRows + 1));
+				}
+			}
+
+			/*
 			// For each column, scan from top to bottom filling in gaps with new tiles.
 			// Can stop when we find an existing tile.
 			for(int row = boardSize.numRows - 1; row >= 0; row--) {
@@ -235,6 +255,7 @@ public class Board: MonoBehaviour {
 					newTile.transform.localPosition = PositionForBoardCoord(new BoardCoord(col, boardSize.numRows + 1));
 				}
 			}
+			//*/
 		}
 
 		return columns;

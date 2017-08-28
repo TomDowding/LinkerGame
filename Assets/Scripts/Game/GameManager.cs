@@ -20,13 +20,6 @@ public class GameManager : Singleton<GameManager> {
 	[SerializeField]
 	private float tileDisappearDelay = 0.4f;
 
-	[SerializeField]
-	private float tileDropDelay = 0.1f;
-
-	[SerializeField]
-	private float tileDropSpeed = 0.25f;
-
-
 	private const int minChainLength = 3;
 
 	public bool interactionEnabled {get; private set;}
@@ -208,44 +201,47 @@ public class GameManager : Singleton<GameManager> {
 
 		// Fill in the gaps created by missing tiles with the existing tiles above
 		ArrayList dropTileColumns = board.FillGapsWithExistingTiles();
-		StartCoroutine(DropColumns(dropTileColumns, 0.1f));
-
-		yield return new WaitForSeconds(0.5f);
+		yield return StartCoroutine(DropColumns(dropTileColumns, 0.1f));
 
 		// Fill in the remaining gaps with new tiles
 		ArrayList newTileColumns = board.FillGapsWithNewTiles();
-		StartCoroutine(DropColumns(newTileColumns, 0.1f));
+		yield return StartCoroutine(DropColumns(newTileColumns, 0.18f));
 
-		yield return new WaitForSeconds(0.5f);
-
+	
 		// Get ready for next chain
 		ResetChain();
 	}
 		
 	private IEnumerator DropColumns(ArrayList dropColumns, float dropDelay) {
 
+		int maxNumRows = 0;
+
+		// Drop all columns simultaneously.
 		for(int col = 0; col < dropColumns.Count; col++) {
 
 			ArrayList column = (ArrayList) dropColumns[col];
 			StartCoroutine(DropColumn(column, dropDelay));
+			if(column.Count > maxNumRows) {
+				maxNumRows = column.Count;
+			}
 		}
 			
-		yield return new WaitForSeconds(0.01f);
+		// Wait for all columns to have completed all rows before continuing
+		float finishedDelay = maxNumRows * dropDelay;
+
+		yield return new WaitForSeconds(finishedDelay);
 	}
 		
 	private IEnumerator DropColumn(ArrayList column, float dropDelay) {
 
+		// Drop all rows in the column with a small delay in between each one
 		for(int row = 0; row < column.Count; row++) {
 
 			Tile tile = (Tile) column[row];
 
-			float existingY = tile.transform.localPosition.y;
-			float newY = board.PositionForBoardCoord(tile.boardCoord).y;
-			float duration = (existingY - newY) / tileDropSpeed;
-		
-			tile.Drop(board.PositionForBoardCoord(tile.boardCoord), duration);
+			tile.Drop(board.PositionForBoardCoord(tile.boardCoord));
 
-			yield return new WaitForSeconds(tileDropDelay);
+			yield return new WaitForSeconds(dropDelay);
 		}
 	}
 	#endregion
