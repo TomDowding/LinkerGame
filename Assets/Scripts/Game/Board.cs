@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 #region Custom structs to help define board properties
 [System.Serializable]
 public struct BoardSize {
 	public int numCols;	
 	public int numRows;
+
+	public BoardSize(int numCols, int numRows) {
+		this.numCols = numCols;
+		this.numRows = numRows;
+	}
 }
 
 public struct BoardCoord {
@@ -46,10 +50,9 @@ public class Board: MonoBehaviour {
 	private Transform tileHolder;
 
 	[SerializeField] 
-	private BoardSize boardSize;
-
-	[SerializeField] 
 	private Canvas canvas;
+
+	private BoardSize boardSize;
 
 	private Tile[,] tiles;
 
@@ -68,7 +71,7 @@ public class Board: MonoBehaviour {
 
 	}
 
-	public void SetupForLevel(Level level) {
+	public void SetupForLevel(LevelData level) {
 
 		for(int i = 0; i < boardSquareHolder.childCount; i++) {
 			DestroyImmediate(boardSquareHolder.GetChild(i).gameObject);
@@ -77,15 +80,20 @@ public class Board: MonoBehaviour {
 			DestroyImmediate(tileHolder.GetChild(i).gameObject);
 		}
 
+	
 		CreateLevel(level);
 	}
 
-	private void CreateLevel(Level level) {
+	private void CreateLevel(LevelData level) {
+
+		// Get the board size in terms of number of rows and columns
+		boardSize = new BoardSize(level.numCols, level.numRows);
+		Debug.Log("Board size is (" + boardSize.numCols + " cols, " + boardSize.numRows + " rows)");
 
 		// Get the board square size from the dummy board square, to help with tile positioning
 		BoardSquare boardSquare = dummyBoardSquareObject.GetComponent<BoardSquare>();
 		boardSquareSize = boardSquare.GetSize();
-		Debug.Log("boardSquareSize size: " + boardSquareSize.width + ", " + boardSquareSize.height);
+		Debug.Log("Board square size is (" + boardSquareSize.width + ", " + boardSquareSize.height + ")");
 	
 		// Find the appropriate board start point for our board size
 		// We want centered horizontally, but anchored to bottom of screen vertically
@@ -99,9 +107,8 @@ public class Board: MonoBehaviour {
 		for (int row = 0; row < boardSize.numRows; row++) {
 			for (int col = 0; col < boardSize.numCols; col++) {
 
-				// TODO: Check if want a tile here or not (different levels)
-
-				if(col == 2 && row % 2 == 0) {
+				// Check the level data tiles to see what we want at this coordinate
+				if(level.tiles[col, row] == 0) {
 					continue;
 				}
 
@@ -151,7 +158,7 @@ public class Board: MonoBehaviour {
 	}
 
 	private int GetRandomTileType() {
-		return Random.Range(0, SpriteServer.Instance.NumTileTypes());
+		return UnityEngine.Random.Range(0, SpriteServer.Instance.NumTileTypes());
 	}
 		
 	public Vector2 PositionForBoardCoord(BoardCoord boardCoord) {

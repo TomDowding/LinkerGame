@@ -11,6 +11,10 @@ public class GameManager : Singleton<GameManager> {
 	private UIManager uiManager;
 
 	[SerializeField]
+	private LevelLoader levelLoader;
+
+
+	[SerializeField]
 	private GameObject dummyLinkObject;
 
 	private ArrayList chain;
@@ -24,19 +28,22 @@ public class GameManager : Singleton<GameManager> {
 
 	public bool interactionEnabled {get; private set;}
 
+	private int currentLevelNum = 0;
+
 
 	void Start () {
 		
 		chain = new ArrayList();
 		links = new ArrayList();
 
-		Level level = new Level();
-		StartLevel(level);
+		StartLevel(currentLevelNum);
 	}
 
-	#region Level
-	private void StartLevel(Level level) {
+	#region Levels
+	private void StartLevel(int levelNum) {
 
+		LevelData level = levelLoader.LoadLevel(levelNum);
+			
 		ResetChain();
 
 		board.SetupForLevel(level);
