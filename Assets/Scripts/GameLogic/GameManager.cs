@@ -11,6 +11,9 @@ public class GameManager : Singleton<GameManager> {
 	private UIManager uiManager;
 
 	[SerializeField]
+	private AudioController audioController;
+
+	[SerializeField]
 	private LevelLoader levelLoader;
 
 	[SerializeField]
@@ -83,6 +86,8 @@ public class GameManager : Singleton<GameManager> {
 		if(linkedToTile != null) {
 			AddLink(linkedToTile, tile);
 		}
+
+		audioController.SelectTile();
 	}
 
 	public void TryRemoveTilesAfterTile(Tile tile) {
@@ -205,6 +210,8 @@ public class GameManager : Singleton<GameManager> {
 			tile.RemoveFromBoard();
 
 			AddTileScore(tile, chainIndex);
+
+			audioController.SmashTile(chainIndex);
 
 			yield return new WaitForSeconds(tileDisappearDelay);
 

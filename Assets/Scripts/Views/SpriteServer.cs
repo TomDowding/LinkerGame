@@ -35,11 +35,19 @@ public class SpriteServer: Singleton<SpriteServer> {
 
 	public Sprite BoardSquareSpriteForType(BoardSquareType boardSquareType) {
 
+		return boardSquareSprites[15];
+
+		/*
 		if(boardSquareType == BoardSquareType.Normal) {
 			return boardSquareSprites[1];
 		}
 		else {
 			return boardSquareSprites[0];
 		}
+		//*/
+	}
+
+	public Sprite BoardSquareSpriteEdge(int edgeValue) {
+		return boardSquareSprites[edgeValue];
 	}
 }

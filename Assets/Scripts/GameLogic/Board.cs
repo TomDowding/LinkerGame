@@ -161,7 +161,45 @@ public class Board: MonoBehaviour {
 				}
 			}
 		}
+
+		//GetBoardSquareEdgeTypes();
 	}
+
+	private bool IsBoardSquareAtCoord(BoardCoord boardCoord) {
+		return boardSquares[boardCoord.col, boardCoord.row].boardSquareType == BoardSquareType.Normal;
+	}
+
+	private void GetBoardSquareEdgeTypes() {
+
+		for (int row = 0; row < boardSize.numRows; row++) {
+			for (int col = 0; col < boardSize.numCols; col++) {
+				
+				bool topLeft     = (col > 0) && (row < boardSize.numRows)
+					&& IsBoardSquareAtCoord(new BoardCoord(col - 1, row));
+
+				bool bottomLeft  = (col > 0) && (row > 0)
+					&& IsBoardSquareAtCoord(new BoardCoord(col - 1, row - 1));
+
+				bool topRight    = (col < boardSize.numCols) && (row < boardSize.numRows)
+					&& IsBoardSquareAtCoord(new BoardCoord(col, row));
+
+				bool bottomRight = (col < boardSize.numCols) && (row > 0)
+					&& IsBoardSquareAtCoord(new BoardCoord(col, row - 1));
+
+
+				// The tiles are named from 0 to 15, according to the bitmask that is
+				// made by combining these four values.
+			
+				int value = (topLeft ? 1 : 0) | ((topRight ? 1 : 0) << 1) | ((bottomLeft ? 1 : 0) << 2) | ((bottomRight ? 1 : 0) << 3);
+
+				Debug.Log("board square (" + col + ", " + row + ") is " + value); 
+				Debug.Log("TL: " + topLeft + " TR: " + topRight + ", BL: " + bottomLeft + ", BR: " + bottomRight);
+
+				boardSquares[col, row].SetupEdge(value);
+			}
+		}
+	}
+
 
 	private BoardSquare CreateBoardSquare(BoardCoord boardCoord, BoardSquareType boardSquareType) {
 

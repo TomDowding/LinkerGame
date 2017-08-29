@@ -24,6 +24,11 @@ public class BoardSquare : MonoBehaviour {
 		boardSquareView.SetSpriteForBoardSquare(this);
 	}
 
+	public void SetupEdge(int edgeValue) {
+
+		boardSquareView.SetSpriteForEdge(edgeValue);
+	}
+
 	public BoardSquareSize GetSize() {
 		
 		return boardSquareView.GetSpriteSize();
