@@ -156,7 +156,8 @@ public class Board: MonoBehaviour {
 				boardSquares[col, row] = CreateBoardSquare(boardCoord, boardSquareType);
 
 				if(boardSquareType != BoardSquareType.Blocker) {
-					tiles[col, row] = CreateTile(boardCoord);
+					int tileType = level.GetRandomTileType();
+					tiles[col, row] = CreateTile(boardCoord, tileType);
 				}
 			}
 		}
@@ -180,7 +181,7 @@ public class Board: MonoBehaviour {
 		return newBoardSquare;
 	}
 
-	private Tile CreateTile(BoardCoord boardCoord) {
+	private Tile CreateTile(BoardCoord boardCoord, int tileType) {
 		
 		Vector2 tilePos = PositionForBoardCoord(boardCoord);
 	
@@ -193,7 +194,7 @@ public class Board: MonoBehaviour {
 		newTileTransform.localScale = Vector3.one;
 
 		Tile newTile = newTileObject.GetComponent<Tile>();
-		newTile.Setup(GetRandomTileType(), boardCoord);
+		newTile.Setup(tileType, boardCoord);
 
 		return newTile;
 	}
@@ -260,7 +261,7 @@ public class Board: MonoBehaviour {
 		return columns;
 	}
 
-	public ArrayList FillGapsWithNewTiles() {
+	public ArrayList FillGapsWithNewTiles(LevelData level) {
 
 		// This array will hold all the new tiles, split into ordered columns.
 		// We use this for animating the drop down after we change the data model here.
@@ -281,7 +282,7 @@ public class Board: MonoBehaviour {
 				if(boardSquares[col, row].boardSquareType == BoardSquareType.Normal) {
 
 					// Put in the new tile at this coord
-					Tile newTile = CreateTile(new BoardCoord(col, row));
+					Tile newTile = CreateTile(new BoardCoord(col, row), level.GetRandomTileType());
 					tiles[col, row] = newTile;
 					column.Add(newTile);
 				

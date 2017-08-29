@@ -221,7 +221,7 @@ public class GameManager : Singleton<GameManager> {
 		yield return StartCoroutine(DropColumns(dropTileColumns, 0.1f));
 
 		// Fill in the remaining gaps with new tiles
-		ArrayList newTileColumns = board.FillGapsWithNewTiles();
+		ArrayList newTileColumns = board.FillGapsWithNewTiles(currentLevel);
 		yield return StartCoroutine(DropColumns(newTileColumns, 0.18f));
 
 		// Use up a move
@@ -321,7 +321,15 @@ public class GameManager : Singleton<GameManager> {
 	private void NextLevel() {
 		
 		currentLevelNum ++;
-		PrepareLevel(currentLevelNum);
+
+		// Check for all levels completed
+		if(currentLevelNum >= levelLoader.GetNumLevels()) {
+			PopupPanel.PopupHandlerDelegate delegateMethod = GameCompletePopupPressed;
+			uiManager.ShowGameComplete(delegateMethod);
+		}
+		else {
+			PrepareLevel(currentLevelNum);
+		}
 	}
 
 	private void AddTileScore(Tile tile, int chainIndex) {
@@ -347,15 +355,14 @@ public class GameManager : Singleton<GameManager> {
 
 		uiManager.SetMovesRemaining(currentLevel.moves - currentNumMovesMade);
 
-		// Test for won level
+		// Test for lost level
 		if((currentNumMovesMade == currentLevel.moves) && (currentScore < currentLevel.targetScore)) {
 			LevelFailure();
 		}
 	}
 
 	private void LevelSuccess() {
-		Debug.Log("Level success!");
-
+		
 		interactionEnabled = false;
 
 		PopupPanel.PopupHandlerDelegate delegateMethod = LevelSuccessPopupPressed;
@@ -363,7 +370,6 @@ public class GameManager : Singleton<GameManager> {
 	}
 
 	private void LevelFailure() {
-		Debug.Log("Level fail!");
 
 		interactionEnabled = false;
 
@@ -375,24 +381,35 @@ public class GameManager : Singleton<GameManager> {
 
 	#region Popup Delegate methods
 	public void LevelIntroPopupPressed(PopupPanel source) {
-		Debug.Log("LevelIntroPopupPressed");
+	
 		StartLevel();
 	}
 
 	public void LevelSuccessPopupPressed(PopupPanel source) {
-		Debug.Log("LevelSuccessPopupPressed");
+	
 		StartCoroutine(LevelSuccessPopupPressedDelay());
 	}
 
 	public IEnumerator LevelSuccessPopupPressedDelay() {
+		
 		yield return new WaitForSeconds(1.0f);
-
 		NextLevel();
 	}
 
 	public void LevelFailurePopupPressed(PopupPanel source) {
-		Debug.Log("LevelLostPopupPressed");
+	
 		RetryLevel();
+	}
+
+	public void GameCompletePopupPressed(PopupPanel source) {
+	
+		StartCoroutine(GameCompletePopupPressedDelay());
+	}
+
+	public IEnumerator GameCompletePopupPressedDelay() {
+
+		yield return new WaitForSeconds(1.0f);
+		StartGame();
 	}
 	#endregion
 }

@@ -10,4 +10,11 @@ public class LevelData {
 	public int numRows;
 	public int targetScore;
 	public int moves;
+	public int numColours;
+
+	public int GetRandomTileType() {
+		return UnityEngine.Random.Range(0, numColours);
+	}
 }
+
+

@@ -35,6 +35,7 @@ public class LevelLoader : MonoBehaviour {
 		LevelData levelData = new LevelData();
 		levelData.targetScore = System.Convert.ToInt32(levelDict["targetScore"]);
 		levelData.moves = System.Convert.ToInt32(levelDict["moves"]);
+		levelData.numColours = System.Convert.ToInt32(levelDict["colours"]);
 
 		List<object> rowList = (List<object>)levelDict["tiles"];
 		levelData.tiles = GetTileArrayFromRowList(rowList);
@@ -46,6 +47,7 @@ public class LevelLoader : MonoBehaviour {
 		Debug.Log("level data " + levelData.numCols + " cols, " + levelData.numRows + " rows");
 		Debug.Log("level data has target score: " + levelData.targetScore);
 		Debug.Log("level data has moves: " + levelData.moves);
+		Debug.Log("level data has colours: " + levelData.numColours);
 
 		return levelData;
 	}
@@ -71,10 +73,11 @@ public class LevelLoader : MonoBehaviour {
 
 	private int[,] GetTileArrayFromRowList(List<object> rowList) {
 
+		// Use the length of first row to size our 2d array of tiles
 		var firstRow = (List<object>)rowList[0];
-
 		int[,] tiles = new int[firstRow.Count, rowList.Count];
 
+		// For each row and column pair set the int from the json
 		for (int rowIndex = rowList.Count - 1; rowIndex >= 0; rowIndex--) {
 			
 			var row = (List<object>)rowList[rowIndex];
@@ -94,5 +97,10 @@ public class LevelLoader : MonoBehaviour {
 		}
 
 		return tiles;
+	}
+
+	public int GetNumLevels() {
+
+		return levelNames.Length;
 	}
 }

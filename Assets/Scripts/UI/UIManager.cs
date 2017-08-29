@@ -125,5 +125,15 @@ public class UIManager : MonoBehaviour {
 		levelIntroPopupPanel.Setup(popupTitle, popupMessage, buttonText, delegateMethod);
 		levelIntroPopupPanel.Enable();
 	}
+
+	public void ShowGameComplete( PopupPanel.PopupHandlerDelegate delegateMethod) {
+
+		string popupTitle = "Game Complete!";
+		string popupMessage = "King of\nthe Jungle!";
+		string buttonText = "Restart";
+
+		levelIntroPopupPanel.Setup(popupTitle, popupMessage, buttonText, delegateMethod);
+		levelIntroPopupPanel.Enable();
+	}
 	#endregion
 }
