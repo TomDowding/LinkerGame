@@ -52,6 +52,12 @@ public class TileView : MonoBehaviour {
 	public void ShowDrop(Vector2 toPosition) {
 
 		dropEaser.StartAnimation(transform, transform.localPosition, toPosition, dropDuration);
+		StartCoroutine(DropSFX());
+	}
+
+	public IEnumerator DropSFX() {
+		yield return new WaitForSeconds(dropDuration);
+		AudioController.Instance.DropTile();
 	}
 
 	public void ShowInChain(int tileType) {

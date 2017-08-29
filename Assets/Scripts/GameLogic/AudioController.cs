@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AudioController : MonoBehaviour {
+public class AudioController : Singleton<AudioController> {
 
 	[SerializeField]
 	private AudioSource audioSourceSmash;
@@ -11,7 +11,10 @@ public class AudioController : MonoBehaviour {
 	private AudioSource audioSourceSelect;
 
 	[SerializeField]
-	private AudioSource audioSourceDeselect;
+	private AudioSource audioSourceDrop;
+
+	[SerializeField]
+	private AudioSource audioSourceButton;
 
 
 	public void SmashTile(int chainIndex) {
@@ -24,8 +27,13 @@ public class AudioController : MonoBehaviour {
 		audioSourceSelect.Play();
 	}
 
-	public void DeselectTile() {
+	public void DropTile() {
 
-		audioSourceDeselect.Play();
+		audioSourceDrop.Play();
+	}
+
+	public void Button() {
+
+		audioSourceButton.Play();
 	}
 }

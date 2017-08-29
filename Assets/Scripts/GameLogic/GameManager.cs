@@ -388,12 +388,16 @@ public class GameManager : Singleton<GameManager> {
 
 	#region Popup Delegate methods
 	public void LevelIntroPopupPressed(PopupPanel source) {
-	
+
+		audioController.Button();
+
 		StartLevel();
 	}
 
 	public void LevelSuccessPopupPressed(PopupPanel source) {
-	
+
+		audioController.Button();
+
 		StartCoroutine(LevelSuccessPopupPressedDelay());
 	}
 
@@ -405,11 +409,15 @@ public class GameManager : Singleton<GameManager> {
 
 	public void LevelFailurePopupPressed(PopupPanel source) {
 	
+		audioController.Button();
+
 		RetryLevel();
 	}
 
 	public void GameCompletePopupPressed(PopupPanel source) {
 	
+		audioController.Button();
+
 		StartCoroutine(GameCompletePopupPressedDelay());
 	}
 

@@ -34,7 +34,7 @@ public class TileTouch : MonoBehaviour,  IPointerEnterHandler, IPointerExitHandl
 
 		tile.Deselect();
 
-		GameManager.Instance.TryCompleteChain();
+		tile.LetGo();
 	}
 
 }
