@@ -30,7 +30,10 @@ public class UIManager : MonoBehaviour {
 	private Animator movesRemainingAnimator;
 
 	[SerializeField]
-	private PopupPanel popupPanel;
+	private PopupPanel levelIntroPopupPanel;
+
+	[SerializeField]
+	private PopupPanel levelOutroPopupPanel;
 
 
 
@@ -95,10 +98,32 @@ public class UIManager : MonoBehaviour {
 
 
 	#region Popup Panel
-	public void ShowPopupPanel(string title, string message, string buttonText, PopupPanel.PopupHandlerDelegate buttonEvent) {
+	public void ShowLevelSuccess( PopupPanel.PopupHandlerDelegate delegateMethod) {
 
-		popupPanel.Setup(title, message, buttonText, buttonEvent);
-		popupPanel.Enable();
+		string popupTitle = "Level Complete!";
+		string popupMessage = "ROAR!";
+		string buttonText = "Next Level";
+		levelOutroPopupPanel.Setup(popupTitle, popupMessage, buttonText, delegateMethod);
+		levelOutroPopupPanel.Enable();
+	}
+
+	public void ShowLevelFailure(PopupPanel.PopupHandlerDelegate delegateMethod) {
+
+		string popupTitle = "No Moves Left!";
+		string popupMessage = "AAARGH!";
+		string buttonText = "Retry";
+		levelOutroPopupPanel.Setup(popupTitle, popupMessage, buttonText, delegateMethod);
+		levelOutroPopupPanel.Enable();
+	}
+
+	public void ShowLevelIntro(LevelData level, int levelNum, PopupPanel.PopupHandlerDelegate delegateMethod) {
+
+		string popupTitle = "Level " + (levelNum + 1).ToString();
+		string popupMessage = "Target: " + level.targetScore + "\nMoves: " + level.moves;
+		string buttonText = "Play";
+
+		levelIntroPopupPanel.Setup(popupTitle, popupMessage, buttonText, delegateMethod);
+		levelIntroPopupPanel.Enable();
 	}
 	#endregion
 }

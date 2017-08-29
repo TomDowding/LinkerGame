@@ -63,7 +63,9 @@ public class Board: MonoBehaviour {
 
 	private BoardSquareSize boardSquareSize;
 
-	private Vector2 boardOffset;
+	private Vector2 boardStartOffset;
+
+	private const int maxNumRows = 9;
 
 
 	void Awake () {
@@ -72,46 +74,76 @@ public class Board: MonoBehaviour {
 
 	void Start () {
 
+		CheckBoardSize();
 	}
 
-	public void SetupForLevel(LevelData level) {
-
-		for(int i = 0; i < boardSquareHolder.childCount; i++) {
-			DestroyImmediate(boardSquareHolder.GetChild(i).gameObject);
-		}
-		for(int i = 0; i < tileHolder.childCount; i++) {
-			DestroyImmediate(tileHolder.GetChild(i).gameObject);
-		}
-
-	
-		CreateLevel(level);
-	}
-
-	private void CreateLevel(LevelData level) {
-
-		// Get the board size in terms of number of rows and columns
-		boardSize = new BoardSize(level.numCols, level.numRows);
-		Debug.Log("Board size is (" + boardSize.numCols + " cols, " + boardSize.numRows + " rows)");
+	private void CheckBoardSize() {
 
 		// Get the board square size from the dummy board square, to help with tile positioning
 		BoardSquare boardSquare = dummyBoardSquareObject.GetComponent<BoardSquare>();
 		boardSquareSize = boardSquare.GetSize();
-		Debug.Log("Board square size is (" + boardSquareSize.width + ", " + boardSquareSize.height + ")");
-	
-		// Find the appropriate board start point for our board size
-		// We want centered horizontally, but anchored to bottom of screen vertically
+
+		CheckBoardScale();
+	}
+		
+	private void CheckBoardScale() {
+
+		// Scale down the whole board if the biggest level size would be too high.
+		// (Our canvas scales by width)
+		// This is only an issue on (3:4) ratios e.g. ipad
 		RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-		boardOffset = new Vector2((boardSquareSize.width * boardSize.numCols) * -0.5f, (canvasRect.rect.size.y  * -0.5f) + 15);
-		Debug.Log("Board offset is (" + boardOffset.x + ", " + boardOffset.y + ")");
+		float maxBoardSize = boardSquareSize.height * maxNumRows;
+		float topAndBottomTotalPadding = 150;
+		float maxAllowedSize = canvasRect.rect.height - topAndBottomTotalPadding;
+		Debug.Log("maxBoardSize: " + maxBoardSize + ", maxAllowedSize:" + maxAllowedSize);
+
+		if(maxBoardSize > maxAllowedSize) {
+			float boardScaler = maxAllowedSize / maxBoardSize;
+			transform.localScale = new Vector3(boardScaler, boardScaler, 1);
+		}
+	}
+
+	public void SetupLevel(LevelData level) {
+
+		RemoveExistingLevel();
+			
+		SetupBoardSize(level);
+
+		CreateBoard(level);
+	}
+
+	private void RemoveExistingLevel() {
+		
+		for(int i = boardSquareHolder.childCount - 1; i >= 0; i--) {
+			Destroy(boardSquareHolder.GetChild(i).gameObject);
+		}
+		for(int i = tileHolder.childCount - 1; i >= 0; i--) {
+			Destroy(tileHolder.GetChild(i).gameObject);
+		}
+	}
+		
+	private void SetupBoardSize(LevelData level) {
+
+		boardSize = new BoardSize(level.numCols, level.numRows);
+
+		// boardStartOffset is used to get the bottom-left position
+		// We want board centered horizontally and vertically
+		float offsetX = (boardSquareSize.width * boardSize.numCols) * -0.5f;
+		float offsetY = ((boardSquareSize.height * boardSize.numRows) * -0.5f);
+		boardStartOffset = new Vector2(offsetX, offsetY);
+		Debug.Log("Board offset is (" + boardStartOffset.x + ", " + boardStartOffset.y + ")");
 
 		// Adjust touch collider to fit the board shape
 		touchCollider.size = new Vector2(boardSize.numCols * boardSquareSize.width, boardSize.numRows * boardSquareSize.height);
 		Vector2 touchColliderOffset = touchCollider.offset;
-		touchColliderOffset.y = ((touchCollider.size.y * 0.5f) + boardOffset.y);
+		touchColliderOffset.y = ((touchCollider.size.y * 0.5f) + boardStartOffset.y);
 		touchCollider.offset = touchColliderOffset;
+	}
 
-		// Create an initial array of board squares and tiles
+	private void CreateBoard(LevelData level) {
+
 		boardSquares = new BoardSquare[boardSize.numCols, boardSize.numRows];
+
 		tiles = new Tile[boardSize.numCols, boardSize.numRows];
 
 		for (int row = 0; row < boardSize.numRows; row++) {
@@ -172,7 +204,7 @@ public class Board: MonoBehaviour {
 		
 	public Vector2 PositionForBoardCoord(BoardCoord boardCoord) {
 		Vector2 pos = new Vector2((boardCoord.col * boardSquareSize.width) + (boardSquareSize.width * 0.5f), (boardCoord.row * boardSquareSize.height) + (boardSquareSize.height * 0.5f));
-		pos += boardOffset;
+		pos += boardStartOffset;
 		return pos;
 	}
 

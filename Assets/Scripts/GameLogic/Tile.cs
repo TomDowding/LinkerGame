@@ -77,7 +77,7 @@ public class Tile : MonoBehaviour {
 			return;
 		}
 
-		Debug.Log("Select tile at " + boardCoord.description + ", inChain: " + inChain);
+		//Debug.Log("Select tile at " + boardCoord.description + ", inChain: " + inChain);
 
 		if(inChain) {
 			// If the tile is already in a chain, we are going back into it.
@@ -101,7 +101,7 @@ public class Tile : MonoBehaviour {
 			return;
 		}
 
-		Debug.Log("Deselect tile at " + boardCoord.description + ", inChain: " + inChain);
+		//Debug.Log("Deselect tile at " + boardCoord.description + ", inChain: " + inChain);
 
 		if(hovering) {
 			hovering = false;

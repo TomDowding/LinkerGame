@@ -48,8 +48,7 @@ public class GameManager : Singleton<GameManager> {
 		chain = new ArrayList();
 		links = new ArrayList();
 
-		currentLevelNum = 0;
-		PrepareLevel(currentLevelNum);
+		StartGame();
 	}
 		
 	#region Chain
@@ -115,7 +114,7 @@ public class GameManager : Singleton<GameManager> {
 		for(int i = links.Count - 1; i >= chainIndex; i--) {
 			GameObject linkObject = (GameObject) links[i];
 			links.Remove(linkObject);
-			DestroyImmediate(linkObject);
+			Destroy(linkObject);
 		}
 	}
 
@@ -165,7 +164,7 @@ public class GameManager : Singleton<GameManager> {
 
 		for(int i = links.Count - 1; i >= 0; i--) {
 			GameObject link = (GameObject) links[i];
-			DestroyImmediate(link);
+			Destroy(link);
 		}
 
 		links.Clear();
@@ -192,9 +191,6 @@ public class GameManager : Singleton<GameManager> {
 	}
 		
 	private IEnumerator CompleteChain() {
-
-		// Use up a move
-		UseMove();
 
 		// Remove chain links from scene
 		ClearLinks();
@@ -228,9 +224,16 @@ public class GameManager : Singleton<GameManager> {
 		ArrayList newTileColumns = board.FillGapsWithNewTiles();
 		yield return StartCoroutine(DropColumns(newTileColumns, 0.18f));
 
-	
+		// Use up a move
+		UseMove();
+
 		// Get ready for next chain
 		ResetChain();
+
+		// Test for won level
+		if(currentScore == currentLevel.targetScore) {
+			LevelSuccess();
+		}
 	}
 		
 	private IEnumerator DropColumns(ArrayList dropColumns, float dropDelay) {
@@ -269,11 +272,20 @@ public class GameManager : Singleton<GameManager> {
 
 
 	#region Game progress
-	private void PrepareLevel(int levelNum) {
+	private void StartGame() {
+		
+		currentLevelNum = 0;
+		PrepareLevel(currentLevelNum);
+	}
 
+	private void PrepareLevel(int levelNum, bool isRetry = false) {
+
+		PrepareLevel(levelLoader.LoadLevel(levelNum), levelNum, isRetry);
+	}
+
+	private void PrepareLevel(LevelData level, int levelNum, bool isRetry = false) {
+		
 		interactionEnabled = false;
-
-		LevelData level = levelLoader.LoadLevel(levelNum);
 
 		currentLevel = level;
 
@@ -285,35 +297,47 @@ public class GameManager : Singleton<GameManager> {
 
 		ResetChain();
 
-		board.SetupForLevel(level);
+		board.SetupLevel(level);
 
-		string popupTitle = "Level " + (levelNum + 1).ToString();
-		string popupMessage = "Target: " + level.targetScore + "\nMoves: " + level.moves;
-		PopupPanel.PopupHandlerDelegate m_method = LevelIntroPopupPlayPressed;
-		uiManager.ShowPopupPanel(popupTitle, popupMessage, "Play", m_method);
+		if(isRetry) {
+			StartLevel();
+		}
+		else {
+			PopupPanel.PopupHandlerDelegate delegateMethod = LevelIntroPopupPressed;
+			uiManager.ShowLevelIntro(level, levelNum, delegateMethod);
+		}
 	}
-
-	public void LevelIntroPopupPlayPressed(PopupPanel source) {
-		Debug.Log("LevelIntroPopupPlayPressed");
-		StartLevel();
-	}
-
-	public void StartLevel() {
+		
+	private void StartLevel() {
 
 		interactionEnabled = true;
 	}
 
-	private void AddTileScore(Tile tile, int chainIndex) {
-		int score = scorePerGem;
+	private void RetryLevel() {
+		
+		PrepareLevel(currentLevel, currentLevelNum, true);
+	}
 
+	private void NextLevel() {
+		
+		currentLevelNum ++;
+		PrepareLevel(currentLevelNum);
+	}
+
+	private void AddTileScore(Tile tile, int chainIndex) {
+
+		// Calculate new score for this tile
+		int tileScore = scorePerGem;
 		if(chainIndex >= minChainLength) {
-			score = scorePerGem + (extraScoreForLongChainGem * ((chainIndex + 1) - minChainLength));
+			tileScore = scorePerGem + (extraScoreForLongChainGem * ((chainIndex + 1) - minChainLength));
 		}
 
-		currentScore += score;
+		// Add on the tile score to current total score
+		currentScore += tileScore;
+		currentScore = Mathf.Min(currentScore, currentLevel.targetScore);
 
-		uiManager.AddFloatingScore(tile.transform.localPosition, score);
-
+		// Show the UI for the new score
+		uiManager.AddFloatingScore(tile.transform.localPosition, tileScore);
 		uiManager.SetScore(currentScore, currentLevel.targetScore);
 	}
 
@@ -322,6 +346,53 @@ public class GameManager : Singleton<GameManager> {
 		currentNumMovesMade++;
 
 		uiManager.SetMovesRemaining(currentLevel.moves - currentNumMovesMade);
+
+		// Test for won level
+		if((currentNumMovesMade == currentLevel.moves) && (currentScore < currentLevel.targetScore)) {
+			LevelFailure();
+		}
+	}
+
+	private void LevelSuccess() {
+		Debug.Log("Level success!");
+
+		interactionEnabled = false;
+
+		PopupPanel.PopupHandlerDelegate delegateMethod = LevelSuccessPopupPressed;
+		uiManager.ShowLevelSuccess(delegateMethod);
+	}
+
+	private void LevelFailure() {
+		Debug.Log("Level fail!");
+
+		interactionEnabled = false;
+
+		PopupPanel.PopupHandlerDelegate delegateMethod = LevelFailurePopupPressed;
+		uiManager.ShowLevelFailure(delegateMethod);
+	}
+	#endregion
+
+
+	#region Popup Delegate methods
+	public void LevelIntroPopupPressed(PopupPanel source) {
+		Debug.Log("LevelIntroPopupPressed");
+		StartLevel();
+	}
+
+	public void LevelSuccessPopupPressed(PopupPanel source) {
+		Debug.Log("LevelSuccessPopupPressed");
+		StartCoroutine(LevelSuccessPopupPressedDelay());
+	}
+
+	public IEnumerator LevelSuccessPopupPressedDelay() {
+		yield return new WaitForSeconds(1.0f);
+
+		NextLevel();
+	}
+
+	public void LevelFailurePopupPressed(PopupPanel source) {
+		Debug.Log("LevelLostPopupPressed");
+		RetryLevel();
 	}
 	#endregion
 }

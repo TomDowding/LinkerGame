@@ -19,7 +19,7 @@ public class BoardSquare : MonoBehaviour {
 
 		this.boardSquareType = boardSquareType;
 
-		gameObject.name = boardSquareType.ToString() + "(" + boardCoord.col + "_" + boardCoord.row;
+		gameObject.name = boardSquareType.ToString() + "_" + boardCoord.col + "_" + boardCoord.row;
 
 		boardSquareView.SetSpriteForBoardSquare(this);
 	}

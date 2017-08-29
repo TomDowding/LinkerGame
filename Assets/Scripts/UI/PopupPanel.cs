@@ -18,51 +18,57 @@ public class PopupPanel : MonoBehaviour {
 	[SerializeField]
 	private Animator revealAnimator;
 
+	[SerializeField]
+	private GameObject panelDeactivator;
 
-	// Event delegates
+
+	// Event delegate
 	public delegate void PopupHandlerDelegate(PopupPanel source);
 	public event PopupHandlerDelegate PopupButtonPressedEvent;
+	private PopupHandlerDelegate delegateMethod;
 
-	private PopupHandlerDelegate currentDelegateMethod;
 
+	public void Enable() {
 
-	public void Enable(bool immediate = false) {
-		gameObject.SetActive(true);
+		panelDeactivator.SetActive(true);
 
 		revealAnimator.SetBool("isHidden", false);
 	}
 
-	public void Disable(bool immediate = false) {
+	public void Disable() {
 
 		// Remove any existing delegate event
-		if(currentDelegateMethod != null) {
-			PopupButtonPressedEvent -= currentDelegateMethod;
+		if(delegateMethod != null) {
+			PopupButtonPressedEvent -= delegateMethod;
 		}
 
 		revealAnimator.SetBool("isHidden", true);
 	}
-
-	public void Setup(string title, string message, string button, PopupHandlerDelegate buttonEvent) {
+		
+	public void Setup(string title, string message, string button, PopupHandlerDelegate delegateMethod) {
+		
 		titleText.text = title;
 		messageText.text = message;
 		buttonText.text = button;
 
-		currentDelegateMethod = buttonEvent;
-		PopupButtonPressedEvent += currentDelegateMethod;
+		this.delegateMethod = delegateMethod;
+		PopupButtonPressedEvent += delegateMethod;
 	}
 
 	public void Popup_Btn() {
+
 		if (PopupButtonPressedEvent != null) {
 			PopupButtonPressedEvent(this);
 		}
-						
-		Disable(true);
+
+		Disable();
 	}
 
 	public void AnimationFinished() {
-		Debug.Log("Animation Finished");
+		
 		if(revealAnimator.GetBool("isHidden")) {
-			gameObject.SetActive(false);
+
+			panelDeactivator.SetActive(false);
 		}
 	}
 }
