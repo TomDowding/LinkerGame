@@ -25,7 +25,7 @@ public class GameManager : Singleton<GameManager> {
 	private ArrayList links;
 
 	// Game progress
-	private int currentLevelNum = 0;
+	private int currentLevelNum;
 
 	private LevelData currentLevel;
 
@@ -48,7 +48,8 @@ public class GameManager : Singleton<GameManager> {
 		chain = new ArrayList();
 		links = new ArrayList();
 
-		StartLevel(currentLevelNum);
+		currentLevelNum = 0;
+		PrepareLevel(currentLevelNum);
 	}
 		
 	#region Chain
@@ -268,7 +269,9 @@ public class GameManager : Singleton<GameManager> {
 
 
 	#region Game progress
-	private void StartLevel(int levelNum) {
+	private void PrepareLevel(int levelNum) {
+
+		interactionEnabled = false;
 
 		LevelData level = levelLoader.LoadLevel(levelNum);
 
@@ -283,6 +286,21 @@ public class GameManager : Singleton<GameManager> {
 		ResetChain();
 
 		board.SetupForLevel(level);
+
+		string popupTitle = "Level " + (levelNum + 1).ToString();
+		string popupMessage = "Target: " + level.targetScore + "\nMoves: " + level.moves;
+		PopupPanel.PopupHandlerDelegate m_method = LevelIntroPopupPlayPressed;
+		uiManager.ShowPopupPanel(popupTitle, popupMessage, "Play", m_method);
+	}
+
+	public void LevelIntroPopupPlayPressed(PopupPanel source) {
+		Debug.Log("LevelIntroPopupPlayPressed");
+		StartLevel();
+	}
+
+	public void StartLevel() {
+
+		interactionEnabled = true;
 	}
 
 	private void AddTileScore(Tile tile, int chainIndex) {
@@ -292,9 +310,9 @@ public class GameManager : Singleton<GameManager> {
 			score = scorePerGem + (extraScoreForLongChainGem * ((chainIndex + 1) - minChainLength));
 		}
 
-		uiManager.AddScoreText(tile.transform.localPosition, score);
-
 		currentScore += score;
+
+		uiManager.AddFloatingScore(tile.transform.localPosition, score);
 
 		uiManager.SetScore(currentScore, currentLevel.targetScore);
 	}

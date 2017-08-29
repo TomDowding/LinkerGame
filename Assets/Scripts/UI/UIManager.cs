@@ -29,6 +29,10 @@ public class UIManager : MonoBehaviour {
 	[SerializeField]
 	private Animator movesRemainingAnimator;
 
+	[SerializeField]
+	private PopupPanel popupPanel;
+
+
 
 	public void ResetForLevel(LevelData level) {
 
@@ -37,6 +41,7 @@ public class UIManager : MonoBehaviour {
 		SetMovesRemaining(level.moves, false);
 	}
 
+	#region Top HUD
 	public void SetScore(int score, int target, bool animated = true) {
 
 		// We never show the score being more than the target
@@ -61,7 +66,7 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
-	public void AddScoreText(Vector3 position, int score) {
+	public void AddFloatingScore(Vector3 position, int score) {
 
 		// Create the link
 		GameObject newScoreTextObject = Instantiate(dummyScoreObject) as GameObject;
@@ -85,6 +90,15 @@ public class UIManager : MonoBehaviour {
 		if(animated) {
 			movesRemainingAnimator.SetTrigger("Go");
 		}
-			
 	}
+	#endregion
+
+
+	#region Popup Panel
+	public void ShowPopupPanel(string title, string message, string buttonText, PopupPanel.PopupHandlerDelegate buttonEvent) {
+
+		popupPanel.Setup(title, message, buttonText, buttonEvent);
+		popupPanel.Enable();
+	}
+	#endregion
 }
