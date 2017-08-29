@@ -13,22 +13,34 @@ public class GameManager : Singleton<GameManager> {
 	[SerializeField]
 	private LevelLoader levelLoader;
 
-
 	[SerializeField]
 	private GameObject dummyLinkObject;
-
-	private ArrayList chain;
-
-	private ArrayList links;
 
 	[SerializeField]
 	private float tileDisappearDelay = 0.4f;
 
-	private const int minChainLength = 3;
+	// Game data holders
+	private ArrayList chain;
+
+	private ArrayList links;
+
+	// Game progress
+	private int currentLevelNum = 0;
+
+	private LevelData currentLevel;
+
+	private int currentScore;
+
+	private int currentNumMovesMade;
 
 	public bool interactionEnabled {get; private set;}
 
-	private int currentLevelNum = 0;
+	// Game constants
+	private const int minChainLength = 3;
+
+	private const int scorePerGem = 20;
+
+	private const int extraScoreForLongChainGem = 10;
 
 
 	void Start () {
@@ -38,19 +50,7 @@ public class GameManager : Singleton<GameManager> {
 
 		StartLevel(currentLevelNum);
 	}
-
-	#region Levels
-	private void StartLevel(int levelNum) {
-
-		LevelData level = levelLoader.LoadLevel(levelNum);
-			
-		ResetChain();
-
-		board.SetupForLevel(level);
-	}
-	#endregion
-
-
+		
 	#region Chain
 	public bool TryAddTileToChain(Tile tile) {
 		//Debug.Log("Try to add tile of type " + tile.tileType + " at coord " + tile.boardCoord.Description() + " to chain, " + chain.Count + " in chain");
@@ -150,6 +150,12 @@ public class GameManager : Singleton<GameManager> {
 		angle += 180;
 		newLinkTransform.eulerAngles = new Vector3(0, 0, angle);
 
+		// Diagonal links are a hypoteneus and need to be longer by ratio of approx. sqrt 2
+		if(angle % 90 != 0) {
+			newLinkTransform.localScale = new Vector3(newLinkTransform.localScale.x * 1.41f, newLinkTransform.localScale.y, newLinkTransform.localScale.z);
+		}
+
+
 		// Keep in array so we can remove them all later
 		links.Add(newLinkObject);
 	}
@@ -183,18 +189,25 @@ public class GameManager : Singleton<GameManager> {
 			ResetChain();
 		}
 	}
-
+		
 	private IEnumerator CompleteChain() {
 
+		// Use up a move
+		UseMove();
+
+		// Remove chain links from scene
 		ClearLinks();
 
 		// Remove tiles in the chain 
-		foreach(Tile tile in chain) {
+		//foreach(Tile tile in chain) {
+		for(int chainIndex = 0; chainIndex < chain.Count; chainIndex++) {
+			
+			Tile tile = (Tile) chain[chainIndex];
 
 			// Visual remove
 			tile.RemoveFromBoard();
 
-			uiManager.AddScoreText(tile.transform.localPosition, 20);
+			AddTileScore(tile, chainIndex);
 
 			yield return new WaitForSeconds(tileDisappearDelay);
 
@@ -250,6 +263,47 @@ public class GameManager : Singleton<GameManager> {
 
 			yield return new WaitForSeconds(dropDelay);
 		}
+	}
+	#endregion
+
+
+	#region Game progress
+	private void StartLevel(int levelNum) {
+
+		LevelData level = levelLoader.LoadLevel(levelNum);
+
+		currentLevel = level;
+
+		currentScore = 0;
+
+		currentNumMovesMade = 0;
+
+		uiManager.ResetForLevel(level);
+
+		ResetChain();
+
+		board.SetupForLevel(level);
+	}
+
+	private void AddTileScore(Tile tile, int chainIndex) {
+		int score = scorePerGem;
+
+		if(chainIndex >= minChainLength) {
+			score = scorePerGem + (extraScoreForLongChainGem * ((chainIndex + 1) - minChainLength));
+		}
+
+		uiManager.AddScoreText(tile.transform.localPosition, score);
+
+		currentScore += score;
+
+		uiManager.SetScore(currentScore, currentLevel.targetScore);
+	}
+
+	private void UseMove() {
+
+		currentNumMovesMade++;
+
+		uiManager.SetMovesRemaining(currentLevel.moves - currentNumMovesMade);
 	}
 	#endregion
 }

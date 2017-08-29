@@ -38,27 +38,27 @@ public class Tile : MonoBehaviour {
 	}
 		
 	public void AddToChain(Tile linkedToTile) {
-		Debug.Log("Adding tile to chain at " + boardCoord.description);
+		//Debug.Log("Adding tile to chain at " + boardCoord.description);
 
 		inChain = true;
 		tileView.ShowInChain(tileType);
 	}
 
 	public void RemoveFromChain() {
-		Debug.Log("Removing tile from chain at " + boardCoord.description);
+		//Debug.Log("Removing tile from chain at " + boardCoord.description);
 
 		inChain = false;
 		tileView.Reset(tileType);
 	}
 
 	public void RemoveFromBoard() {
-		Debug.Log("Removing tile from board at " + boardCoord.description);
+		//Debug.Log("Removing tile from board at " + boardCoord.description);
 
 		tileView.ShowDisappear();
 	}
 
 	public void Drop(Vector2 toPosition) {
-		Debug.Log("Dropping tile at " + boardCoord.description + " to " + toPosition);
+		//Debug.Log("Dropping tile at " + boardCoord.description + " to " + toPosition);
 
 		tileView.ShowVisible();
 

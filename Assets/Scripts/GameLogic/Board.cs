@@ -50,6 +50,9 @@ public class Board: MonoBehaviour {
 	private Transform tileHolder;
 
 	[SerializeField] 
+	private BoxCollider2D touchCollider;
+
+	[SerializeField] 
 	private Canvas canvas;
 
 	private BoardSize boardSize;
@@ -60,7 +63,7 @@ public class Board: MonoBehaviour {
 
 	private BoardSquareSize boardSquareSize;
 
-	private Vector2 boardOrigin;
+	private Vector2 boardOffset;
 
 
 	void Awake () {
@@ -98,7 +101,14 @@ public class Board: MonoBehaviour {
 		// Find the appropriate board start point for our board size
 		// We want centered horizontally, but anchored to bottom of screen vertically
 		RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-		boardOrigin = new Vector2((boardSquareSize.width * boardSize.numCols) * -0.5f, (canvasRect.rect.size.y  * -0.5f) + 15);
+		boardOffset = new Vector2((boardSquareSize.width * boardSize.numCols) * -0.5f, (canvasRect.rect.size.y  * -0.5f) + 15);
+		Debug.Log("Board offset is (" + boardOffset.x + ", " + boardOffset.y + ")");
+
+		// Adjust touch collider to fit the board shape
+		touchCollider.size = new Vector2(boardSize.numCols * boardSquareSize.width, boardSize.numRows * boardSquareSize.height);
+		Vector2 touchColliderOffset = touchCollider.offset;
+		touchColliderOffset.y = ((touchCollider.size.y * 0.5f) + boardOffset.y);
+		touchCollider.offset = touchColliderOffset;
 
 		// Create an initial array of board squares and tiles
 		boardSquares = new BoardSquare[boardSize.numCols, boardSize.numRows];
@@ -162,8 +172,13 @@ public class Board: MonoBehaviour {
 		
 	public Vector2 PositionForBoardCoord(BoardCoord boardCoord) {
 		Vector2 pos = new Vector2((boardCoord.col * boardSquareSize.width) + (boardSquareSize.width * 0.5f), (boardCoord.row * boardSquareSize.height) + (boardSquareSize.height * 0.5f));
-		pos += boardOrigin;
+		pos += boardOffset;
 		return pos;
+	}
+
+	public BoardCoord CoordForBoardPosition(Vector2 position) {
+
+		return new BoardCoord(0, 0);
 	}
 		
 	public void RemoveTile(Tile tile) {
