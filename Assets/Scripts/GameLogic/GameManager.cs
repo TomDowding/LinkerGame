@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : Singleton<GameManager> {
+public class GameManager : MonoBehaviour {
 
 	[SerializeField]
 	private Board board;
@@ -230,7 +230,7 @@ public class GameManager : Singleton<GameManager> {
 		}
 	
 		// Fill in the remaining gaps with new tiles
-		ArrayList newTileColumns = board.FillGapsWithNewTiles(currentLevel);
+		ArrayList newTileColumns = board.FillGapsWithNewTiles(currentLevel, this);
 		yield return StartCoroutine(DropColumns(newTileColumns, 0.18f));
 
 		UseMove();
@@ -300,7 +300,7 @@ public class GameManager : Singleton<GameManager> {
 
 		ResetChain();
 
-		board.SetupLevel(level);
+		board.SetupLevel(level, this);
 
 		if(isRetry) {
 			StartLevel();
@@ -326,7 +326,7 @@ public class GameManager : Singleton<GameManager> {
 		currentLevelNum ++;
 
 		// Check for all levels completed
-		if(currentLevelNum >= levelLoader.GetNumLevels()) {
+		if(!levelLoader.LevelExistsAtIndex(currentLevelNum)) {
 			PopupPanel.PopupHandlerDelegate delegateMethod = GameCompletePopupPressed;
 			uiManager.ShowGameComplete(delegateMethod);
 		}

@@ -103,13 +103,13 @@ public class Board: MonoBehaviour {
 		}
 	}
 
-	public void SetupLevel(LevelData level) {
+	public void SetupLevel(LevelData level, GameManager gameManager) {
 
 		RemoveExistingLevel();
 			
 		SetupBoardSize(level);
 
-		CreateBoard(level);
+		CreateBoardObjects(level, gameManager);
 	}
 
 	private void RemoveExistingLevel() {
@@ -140,7 +140,7 @@ public class Board: MonoBehaviour {
 		touchCollider.offset = touchColliderOffset;
 	}
 
-	private void CreateBoard(LevelData level) {
+	private void CreateBoardObjects(LevelData level, GameManager gameManager) {
 
 		boardSquares = new BoardSquare[boardSize.numCols, boardSize.numRows];
 
@@ -152,55 +152,20 @@ public class Board: MonoBehaviour {
 				BoardCoord boardCoord = new BoardCoord(col, row);
 
 				BoardSquareType boardSquareType = (BoardSquareType) level.tiles[col, row];
-
+				if(boardSquareType == BoardSquareType.Blocker && IsCoordEdgeOfBoard(boardCoord)) {
+					boardSquareType = BoardSquareType.Edge;
+				}
+					
 				boardSquares[col, row] = CreateBoardSquare(boardCoord, boardSquareType);
 
-				if(boardSquareType != BoardSquareType.Blocker) {
+				if(IsBoardSquareAtCoord(boardCoord)) {
 					int tileType = level.GetRandomTileType();
-					tiles[col, row] = CreateTile(boardCoord, tileType);
+					tiles[col, row] = CreateTile(boardCoord, tileType, gameManager);
 				}
 			}
 		}
-
-		//GetBoardSquareEdgeTypes();
 	}
-
-	private bool IsBoardSquareAtCoord(BoardCoord boardCoord) {
-		return boardSquares[boardCoord.col, boardCoord.row].boardSquareType == BoardSquareType.Normal;
-	}
-
-	private void GetBoardSquareEdgeTypes() {
-
-		for (int row = 0; row < boardSize.numRows; row++) {
-			for (int col = 0; col < boardSize.numCols; col++) {
-				
-				bool topLeft     = (col > 0) && (row < boardSize.numRows)
-					&& IsBoardSquareAtCoord(new BoardCoord(col - 1, row));
-
-				bool bottomLeft  = (col > 0) && (row > 0)
-					&& IsBoardSquareAtCoord(new BoardCoord(col - 1, row - 1));
-
-				bool topRight    = (col < boardSize.numCols) && (row < boardSize.numRows)
-					&& IsBoardSquareAtCoord(new BoardCoord(col, row));
-
-				bool bottomRight = (col < boardSize.numCols) && (row > 0)
-					&& IsBoardSquareAtCoord(new BoardCoord(col, row - 1));
-
-
-				// The tiles are named from 0 to 15, according to the bitmask that is
-				// made by combining these four values.
-			
-				int value = (topLeft ? 1 : 0) | ((topRight ? 1 : 0) << 1) | ((bottomLeft ? 1 : 0) << 2) | ((bottomRight ? 1 : 0) << 3);
-
-				Debug.Log("board square (" + col + ", " + row + ") is " + value); 
-				Debug.Log("TL: " + topLeft + " TR: " + topRight + ", BL: " + bottomLeft + ", BR: " + bottomRight);
-
-				boardSquares[col, row].SetupEdge(value);
-			}
-		}
-	}
-
-
+		
 	private BoardSquare CreateBoardSquare(BoardCoord boardCoord, BoardSquareType boardSquareType) {
 
 		Vector2 pos = PositionForBoardCoord(boardCoord);
@@ -219,7 +184,7 @@ public class Board: MonoBehaviour {
 		return newBoardSquare;
 	}
 
-	private Tile CreateTile(BoardCoord boardCoord, int tileType) {
+	private Tile CreateTile(BoardCoord boardCoord, int tileType, GameManager gameManager) {
 		
 		Vector2 tilePos = PositionForBoardCoord(boardCoord);
 	
@@ -232,7 +197,7 @@ public class Board: MonoBehaviour {
 		newTileTransform.localScale = Vector3.one;
 
 		Tile newTile = newTileObject.GetComponent<Tile>();
-		newTile.Setup(tileType, boardCoord);
+		newTile.Setup(tileType, boardCoord, gameManager);
 
 		return newTile;
 	}
@@ -251,6 +216,25 @@ public class Board: MonoBehaviour {
 
 		return new BoardCoord(0, 0);
 	}
+
+	private bool IsBoardSquareAtCoord(BoardCoord boardCoord) {
+		return boardSquares[boardCoord.col, boardCoord.row].boardSquareType == BoardSquareType.Normal;
+	}
+
+	private bool IsTileAtCoord(BoardCoord boardCoord) {
+		return tiles[boardCoord.col, boardCoord.row] != null;
+	}
+
+	private bool IsCoordEdgeOfBoard(BoardCoord boardCoord) {
+
+		if(boardCoord.col == 0 || boardCoord.col == boardSize.numCols - 1) {
+			return true;
+		}
+		if(boardCoord.row == 0 || boardCoord.row == boardSize.numRows - 1) {
+			return true;
+		}
+		return false;
+	}
 		
 	public void RemoveTile(Tile tile) {
 		// Creates a 'gap' in the tiles array
@@ -258,7 +242,7 @@ public class Board: MonoBehaviour {
 	}
 
 	private void MoveTile(Tile tile, BoardCoord fromCoord, BoardCoord toCoord) {
-		tile.Setup(tile.tileType, toCoord);
+		tile.MoveCoord(toCoord);
 		tiles[toCoord.col, toCoord.row] = tile;
 		tiles[fromCoord.col, fromCoord.row] = null;
 	}
@@ -276,8 +260,10 @@ public class Board: MonoBehaviour {
 
 			for(int row = 0; row < boardSize.numRows; row++) {
 
+				BoardCoord boardCoord = new BoardCoord(col, row);
+
 				// A gap exists if there is a normal board square but no tile
-				if(boardSquares[col, row].boardSquareType == BoardSquareType.Normal && tiles[col, row] == null) {
+				if(IsBoardSquareAtCoord(boardCoord) && !IsTileAtCoord(boardCoord)) {
 
 					// Scan upwards to find first tile above gap
 					for(int scanRow = row + 1; scanRow < boardSize.numRows; scanRow++) {
@@ -299,7 +285,7 @@ public class Board: MonoBehaviour {
 		return columns;
 	}
 
-	public ArrayList FillGapsWithNewTiles(LevelData level) {
+	public ArrayList FillGapsWithNewTiles(LevelData level, GameManager gameManager) {
 
 		// This array will hold all the new tiles, split into ordered columns.
 		// We use this for animating the drop down after we change the data model here.
@@ -313,14 +299,16 @@ public class Board: MonoBehaviour {
 			// Scan from bottom to top looking for any remaining normal board squares with no tile
 			for(int row = 0; row < boardSize.numRows; row++) {
 
-				if(tiles[col, row] != null) {
-					continue;
-				}
+				BoardCoord boardCoord = new BoardCoord(col, row);
 
-				if(boardSquares[col, row].boardSquareType == BoardSquareType.Normal) {
+			//	if(IsTileAtCoord(boardCoord)) {
+			//		continue;
+			//	}
+
+				if(IsBoardSquareAtCoord(boardCoord) && !IsTileAtCoord(boardCoord)) {
 
 					// Put in the new tile at this coord
-					Tile newTile = CreateTile(new BoardCoord(col, row), level.GetRandomTileType());
+					Tile newTile = CreateTile(boardCoord, level.GetRandomTileType(), gameManager);
 					tiles[col, row] = newTile;
 					column.Add(newTile);
 				

@@ -5,6 +5,7 @@ using UnityEngine;
 public enum BoardSquareType {
 	Blocker = 0,
 	Normal = 1,
+	Edge = 2,
 }
 
 public class BoardSquare : MonoBehaviour {
@@ -21,14 +22,9 @@ public class BoardSquare : MonoBehaviour {
 
 		gameObject.name = boardSquareType.ToString() + "_" + boardCoord.col + "_" + boardCoord.row;
 
-		boardSquareView.SetSpriteForBoardSquare(this);
+		boardSquareView.SetSpriteForBoardSquare(boardSquareType);
 	}
-
-	public void SetupEdge(int edgeValue) {
-
-		boardSquareView.SetSpriteForEdge(edgeValue);
-	}
-
+		
 	public BoardSquareSize GetSize() {
 		
 		return boardSquareView.GetSpriteSize();

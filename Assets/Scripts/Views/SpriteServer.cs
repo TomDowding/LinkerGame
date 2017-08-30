@@ -13,11 +13,14 @@ public class SpriteServer: Singleton<SpriteServer> {
 	[SerializeField] 
 	private Sprite[] boardSquareSprites;
 
+
 	public int NumTileTypes() {
+		
 		return tileSprites.Length;
 	}
 
 	public Sprite NormalSpriteForTileType(int type) {
+		
 		if(type >= tileSprites.Length) {
 			Debug.LogWarning("Trying to get normal sprite index " + type + " of " + tileSprites.Length);
 			return null;
@@ -26,6 +29,7 @@ public class SpriteServer: Singleton<SpriteServer> {
 	}
 
 	public Sprite OutlineSpriteForTileType(int type) {
+		
 		if(type >= tileOutlineSprites.Length) {
 			Debug.LogWarning("Trying to get outline sprite index " + type + " of " + tileOutlineSprites.Length);
 			return null;
@@ -35,19 +39,15 @@ public class SpriteServer: Singleton<SpriteServer> {
 
 	public Sprite BoardSquareSpriteForType(BoardSquareType boardSquareType) {
 
-		return boardSquareSprites[15];
-
-		/*
 		if(boardSquareType == BoardSquareType.Normal) {
-			return boardSquareSprites[1];
-		}
-		else {
 			return boardSquareSprites[0];
 		}
-		//*/
+
+		return boardSquareSprites[1];
 	}
 
 	public Sprite BoardSquareSpriteEdge(int edgeValue) {
+		
 		return boardSquareSprites[edgeValue];
 	}
 }
