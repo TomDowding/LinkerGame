@@ -49,6 +49,8 @@ public class LevelLoader : MonoBehaviour {
 		Debug.Log("level data has moves: " + levelData.moves);
 		Debug.Log("level data has colours: " + levelData.numColours);
 
+		Resources.UnloadAsset(levelFile);
+
 		return levelData;
 	}
 

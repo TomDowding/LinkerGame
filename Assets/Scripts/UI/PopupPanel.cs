@@ -21,6 +21,12 @@ public class PopupPanel : MonoBehaviour {
 	[SerializeField]
 	private GameObject panelDeactivator;
 
+	[SerializeField]
+	private AudioSource buttonClip;
+
+	[SerializeField]
+	private AudioSource swooshClip;
+
 
 	// Event delegate
 	public delegate void PopupHandlerDelegate(PopupPanel source);
@@ -32,6 +38,8 @@ public class PopupPanel : MonoBehaviour {
 
 		panelDeactivator.SetActive(true);
 
+		swooshClip.Play();
+
 		revealAnimator.SetBool("isHidden", false);
 	}
 
@@ -41,6 +49,8 @@ public class PopupPanel : MonoBehaviour {
 		if(delegateMethod != null) {
 			PopupButtonPressedEvent -= delegateMethod;
 		}
+
+		//swooshClip.Play();
 
 		revealAnimator.SetBool("isHidden", true);
 	}
@@ -56,6 +66,8 @@ public class PopupPanel : MonoBehaviour {
 	}
 
 	public void Popup_Btn() {
+
+		buttonClip.Play();
 
 		if (PopupButtonPressedEvent != null) {
 			PopupButtonPressedEvent(this);

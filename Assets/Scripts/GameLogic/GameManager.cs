@@ -11,9 +11,6 @@ public class GameManager : Singleton<GameManager> {
 	private UIManager uiManager;
 
 	[SerializeField]
-	private AudioController audioController;
-
-	[SerializeField]
 	private LevelLoader levelLoader;
 
 	[SerializeField]
@@ -21,6 +18,10 @@ public class GameManager : Singleton<GameManager> {
 
 	[SerializeField]
 	private float tileDisappearDelay = 0.4f;
+
+	[SerializeField]
+	private AudioSource levelWinClip;
+
 
 	// Game data holders
 	private ArrayList chain;
@@ -86,8 +87,6 @@ public class GameManager : Singleton<GameManager> {
 		if(linkedToTile != null) {
 			AddLink(linkedToTile, tile);
 		}
-
-		audioController.SelectTile();
 	}
 
 	public void TryRemoveTilesAfterTile(Tile tile) {
@@ -196,7 +195,7 @@ public class GameManager : Singleton<GameManager> {
 	}
 		
 	private IEnumerator CompleteChain() {
-
+		
 		// Remove chain links from scene
 		ClearLinks();
 
@@ -206,16 +205,13 @@ public class GameManager : Singleton<GameManager> {
 			
 			Tile tile = (Tile) chain[chainIndex];
 
-			// Visual remove
-			tile.RemoveFromBoard();
+			tile.RemoveFromBoard(chainIndex);
 
 			AddTileScore(tile, chainIndex);
 
-			audioController.SmashTile(chainIndex);
-
+			// Small delay so they disappear in a chain
 			yield return new WaitForSeconds(tileDisappearDelay);
 
-			// Data remove
 			board.RemoveTile(tile);
 
 			Destroy(tile.gameObject);
@@ -227,20 +223,19 @@ public class GameManager : Singleton<GameManager> {
 		ArrayList dropTileColumns = board.FillGapsWithExistingTiles();
 		yield return StartCoroutine(DropColumns(dropTileColumns, 0.1f));
 
+		// Try for level success now. If it is true we don't need to distract with new tiles
+		if(TryLevelSuccess()) {
+			UseMove();
+			yield break;
+		}
+	
 		// Fill in the remaining gaps with new tiles
 		ArrayList newTileColumns = board.FillGapsWithNewTiles(currentLevel);
 		yield return StartCoroutine(DropColumns(newTileColumns, 0.18f));
 
-		// Use up a move
 		UseMove();
 
-		// Get ready for next chain
 		ResetChain();
-
-		// Test for won level
-		if(currentScore == currentLevel.targetScore) {
-			LevelSuccess();
-		}
 	}
 		
 	private IEnumerator DropColumns(ArrayList dropColumns, float dropDelay) {
@@ -280,8 +275,9 @@ public class GameManager : Singleton<GameManager> {
 
 	#region Game progress
 	private void StartGame() {
-		
+
 		currentLevelNum = 0;
+
 		PrepareLevel(currentLevelNum);
 	}
 
@@ -339,6 +335,18 @@ public class GameManager : Singleton<GameManager> {
 		}
 	}
 
+	private void UseMove() {
+
+		currentNumMovesMade++;
+
+		uiManager.SetMovesRemaining(currentLevel.moves - currentNumMovesMade);
+
+		// Test for lost level
+		if((currentNumMovesMade == currentLevel.moves) && (currentScore < currentLevel.targetScore)) {
+			LevelFailure();
+		}
+	}
+
 	private void AddTileScore(Tile tile, int chainIndex) {
 
 		// Calculate new score for this tile
@@ -354,20 +362,29 @@ public class GameManager : Singleton<GameManager> {
 		// Show the UI for the new score
 		uiManager.AddFloatingScore(tile.transform.localPosition, tileScore);
 		uiManager.SetScore(currentScore, currentLevel.targetScore);
-	}
 
-	private void UseMove() {
-
-		currentNumMovesMade++;
-
-		uiManager.SetMovesRemaining(currentLevel.moves - currentNumMovesMade);
-
-		// Test for lost level
-		if((currentNumMovesMade == currentLevel.moves) && (currentScore < currentLevel.targetScore)) {
-			LevelFailure();
+		// Check for level win. We'll start the music now,
+		// but won't do anything else until all tile scores added
+		if(CheckForLevelWin()) {
+			Debug.Log("level win score " + levelWinClip.isPlaying);
+			if(!levelWinClip.isPlaying) {
+				levelWinClip.Play();
+			}
 		}
 	}
+		
+	private bool TryLevelSuccess() {
+		if(CheckForLevelWin()) {
+			LevelSuccess();
+			return true;
+		}
+		return false;
+	}
 
+	private bool CheckForLevelWin() {
+		return currentScore >= currentLevel.targetScore;
+	}
+		
 	private void LevelSuccess() {
 		
 		interactionEnabled = false;
@@ -389,14 +406,10 @@ public class GameManager : Singleton<GameManager> {
 	#region Popup Delegate methods
 	public void LevelIntroPopupPressed(PopupPanel source) {
 
-		audioController.Button();
-
 		StartLevel();
 	}
 
 	public void LevelSuccessPopupPressed(PopupPanel source) {
-
-		audioController.Button();
 
 		StartCoroutine(LevelSuccessPopupPressedDelay());
 	}
@@ -408,16 +421,12 @@ public class GameManager : Singleton<GameManager> {
 	}
 
 	public void LevelFailurePopupPressed(PopupPanel source) {
-	
-		audioController.Button();
 
 		RetryLevel();
 	}
 
 	public void GameCompletePopupPressed(PopupPanel source) {
-	
-		audioController.Button();
-
+		
 		StartCoroutine(GameCompletePopupPressedDelay());
 	}
 

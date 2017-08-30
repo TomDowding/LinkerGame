@@ -31,6 +31,16 @@ public class TileView : MonoBehaviour {
 	[SerializeField]
 	private float dropDuration = 0.4f;
 
+	[SerializeField]
+	private AudioSource smashClip;
+
+	[SerializeField]
+	private AudioSource selectClip;
+
+	[SerializeField]
+	private AudioSource dropClip;
+
+
 
 	public void Reset(int tileType) {
 		
@@ -52,16 +62,21 @@ public class TileView : MonoBehaviour {
 	public void ShowDrop(Vector2 toPosition) {
 
 		dropEaser.StartAnimation(transform, transform.localPosition, toPosition, dropDuration);
+
 		StartCoroutine(DropSFX());
 	}
 
 	public IEnumerator DropSFX() {
+
 		yield return new WaitForSeconds(dropDuration);
-		AudioController.Instance.DropTile();
+
+		dropClip.Play();
 	}
 
 	public void ShowInChain(int tileType) {
-		
+
+		selectClip.Play();
+
 		spriteRenderer.sprite = SpriteServer.Instance.OutlineSpriteForTileType(tileType);
 	}
 
@@ -70,7 +85,13 @@ public class TileView : MonoBehaviour {
 		spriteRenderer.sprite = SpriteServer.Instance.NormalSpriteForTileType(tileType);
 	}
 
-	public void ShowDisappear() {
+	public void ShowDisappear(int chainIndex) {
+
+		float pitchIncrement = 0.25f;
+
+		smashClip.pitch = ((float)chainIndex + 1) * pitchIncrement;
+
+		smashClip.Play();
 
 		scaleEaser.StartAnimation(spriteTransform, Vector2.one, Vector3.zero, disappearDuration);
 	}

@@ -7,7 +7,6 @@ public class Tile : MonoBehaviour {
 	[SerializeField]
 	private TileView tileView;
 
-
 	public int tileType {get; private set;}
 
 	public BoardCoord boardCoord {get; private set;}
@@ -39,7 +38,7 @@ public class Tile : MonoBehaviour {
 		
 	public void AddToChain(Tile linkedToTile) {
 		//Debug.Log("Adding tile to chain at " + boardCoord.description);
-
+	
 		inChain = true;
 		tileView.ShowInChain(tileType);
 	}
@@ -51,10 +50,10 @@ public class Tile : MonoBehaviour {
 		tileView.Reset(tileType);
 	}
 
-	public void RemoveFromBoard() {
+	public void RemoveFromBoard(int chainIndex) {
 		//Debug.Log("Removing tile from board at " + boardCoord.description);
 
-		tileView.ShowDisappear();
+		tileView.ShowDisappear(chainIndex);
 	}
 
 	public void Drop(Vector2 toPosition) {
@@ -64,7 +63,7 @@ public class Tile : MonoBehaviour {
 
 		tileView.ShowDrop(toPosition);
 	}
-
+		
 	public void PrepareForNewDrop() {
 		tileView.ShowInvisible();
 	}

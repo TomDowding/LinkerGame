@@ -18,13 +18,7 @@ public class UIManager : MonoBehaviour {
 	private Text movesRemainingText;
 
 	[SerializeField]
-	private Image progressLine;
-
-	[SerializeField]
-	private Image progressNode;
-
-	[SerializeField]
-	private RectTransformMoveEaser scoreNodeEaser;
+	private ProgressMeter scoreProgressMeter;
 
 	[SerializeField]
 	private Animator movesRemainingAnimator;
@@ -50,23 +44,13 @@ public class UIManager : MonoBehaviour {
 		// We never show the score being more than the target
 		score = Mathf.Min(score, target);
 
-		// Set the text
-		string currentCodeString = score.ToString("D3");
-		string targetCodeString = target.ToString("D3");
+		// Set the text. Padded zeroes of score matches the length of the target score string
+		string targetCodeString = target.ToString();
+		string currentCodeString = score.ToString("D" + targetCodeString.Length);
 		scoreText.text = currentCodeString + "/" + targetCodeString;
 
-		// Move the progress node
-		float completeFactor = (float) score / (float) target;
-		float maxLength = progressLine.rectTransform.rect.width;
-		float nodeXPos = maxLength * completeFactor;
-		Vector2 newPos = new Vector2(nodeXPos, progressNode.rectTransform.anchoredPosition.y);
-
-		if(animated) {
-			scoreNodeEaser.StartAnimation(null, progressNode.rectTransform.anchoredPosition, newPos, 0.25f);
-		}
-		else {
-			progressNode.rectTransform.anchoredPosition = newPos;
-		}
+		// Move the meter
+		scoreProgressMeter.MoveMeter((float) score, (float) target, animated);
 	}
 
 	public void AddFloatingScore(Vector3 position, int score) {
@@ -101,7 +85,7 @@ public class UIManager : MonoBehaviour {
 	public void ShowLevelSuccess( PopupPanel.PopupHandlerDelegate delegateMethod) {
 
 		string popupTitle = "Level Complete!";
-		string popupMessage = "ROAR!";
+		string popupMessage = "ROAR!!!";
 		string buttonText = "Next Level";
 		levelOutroPopupPanel.Setup(popupTitle, popupMessage, buttonText, delegateMethod);
 		levelOutroPopupPanel.Enable();
