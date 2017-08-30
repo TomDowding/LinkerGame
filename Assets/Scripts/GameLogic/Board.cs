@@ -65,12 +65,6 @@ public class Board: MonoBehaviour {
 
 	private Vector2 boardStartOffset;
 
-	private const int maxNumRows = 9;
-
-
-	void Awake () {
-		
-	}
 
 	void Start () {
 
@@ -92,11 +86,10 @@ public class Board: MonoBehaviour {
 		// (Our canvas scales by width)
 		// This is only an issue on (3:4) ratios e.g. ipad
 		RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-		float maxBoardSize = boardSquareSize.height * maxNumRows;
+		float maxBoardSize = boardSquareSize.height * GameManager.maxNumRows;
 		float topAndBottomTotalPadding = 150;
 		float maxAllowedSize = canvasRect.rect.height - topAndBottomTotalPadding;
-		Debug.Log("maxBoardSize: " + maxBoardSize + ", maxAllowedSize:" + maxAllowedSize);
-
+	
 		if(maxBoardSize > maxAllowedSize) {
 			float boardScaler = maxAllowedSize / maxBoardSize;
 			transform.localScale = new Vector3(boardScaler, boardScaler, 1);
@@ -131,7 +124,6 @@ public class Board: MonoBehaviour {
 		float offsetX = (boardSquareSize.width * boardSize.numCols) * -0.5f;
 		float offsetY = ((boardSquareSize.height * boardSize.numRows) * -0.5f);
 		boardStartOffset = new Vector2(offsetX, offsetY);
-		Debug.Log("Board offset is (" + boardStartOffset.x + ", " + boardStartOffset.y + ")");
 
 		// Adjust touch collider to fit the board shape
 		touchInput.ResizeColliderForBoard(boardSize, boardSquareSize);
@@ -148,6 +140,7 @@ public class Board: MonoBehaviour {
 
 				BoardCoord boardCoord = new BoardCoord(col, row);
 
+				// Create a board square of right type for this coordinate
 				BoardSquareType boardSquareType = (BoardSquareType) level.tiles[col, row];
 				if(boardSquareType == BoardSquareType.Blocker && IsCoordEdgeOfBoard(boardCoord)) {
 					boardSquareType = BoardSquareType.Edge;
@@ -155,7 +148,8 @@ public class Board: MonoBehaviour {
 					
 				boardSquares[col, row] = CreateBoardSquare(boardCoord, boardSquareType);
 
-				if(IsBoardSquareAtCoord(boardCoord)) {
+				// Create a tile if we should depending on type of board square
+				if(CanHaveTileAtCoord(boardCoord)) {
 					int tileType = level.GetRandomTileType();
 					tiles[col, row] = CreateTile(boardCoord, tileType, gameManager);
 				}
@@ -218,7 +212,7 @@ public class Board: MonoBehaviour {
 		return  new BoardCoord(col, row);
 	}
 
-	private bool IsBoardSquareAtCoord(BoardCoord boardCoord) {
+	private bool CanHaveTileAtCoord(BoardCoord boardCoord) {
 		return boardSquares[boardCoord.col, boardCoord.row].boardSquareType == BoardSquareType.Normal;
 	}
 
@@ -239,7 +233,7 @@ public class Board: MonoBehaviour {
 	#endregion
 
 
-	#region Actions
+	#region Actions from Game Manager
 	public void RemoveTile(Tile tile) {
 		// Creates a 'gap' in the tiles array
 		tiles[tile.boardCoord.col, tile.boardCoord.row] = null;
@@ -266,8 +260,8 @@ public class Board: MonoBehaviour {
 
 				BoardCoord boardCoord = new BoardCoord(col, row);
 
-				// A gap exists if there is a normal board square but no tile
-				if(IsBoardSquareAtCoord(boardCoord) && !IsTileAtCoord(boardCoord)) {
+				// A gap exists if we could have a tile here but don't
+				if(CanHaveTileAtCoord(boardCoord) && !IsTileAtCoord(boardCoord)) {
 
 					// Scan upwards to find first tile above gap
 					for(int scanRow = row + 1; scanRow < boardSize.numRows; scanRow++) {
@@ -300,12 +294,12 @@ public class Board: MonoBehaviour {
 			ArrayList column = new ArrayList();
 			columns.Add(column);
 		
-			// Scan from bottom to top looking for any remaining normal board squares with no tile
+			// Scan from bottom to top looking for any remaining board squares with no tile
 			for(int row = 0; row < boardSize.numRows; row++) {
 
 				BoardCoord boardCoord = new BoardCoord(col, row);
 
-				if(IsBoardSquareAtCoord(boardCoord) && !IsTileAtCoord(boardCoord)) {
+				if(CanHaveTileAtCoord(boardCoord) && !IsTileAtCoord(boardCoord)) {
 
 					// Put in the new tile at this coord
 					Tile newTile = CreateTile(boardCoord, level.GetRandomTileType(), gameManager);

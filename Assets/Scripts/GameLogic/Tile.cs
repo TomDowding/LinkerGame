@@ -17,10 +17,7 @@ public class Tile : MonoBehaviour {
 
 	private GameManager gameManager;
 
-	void Start () {
-			
-	}
-		
+
 	public void Setup(int tileType, BoardCoord boardCoord, GameManager gameManager) {
 
 		this.gameManager = gameManager;
@@ -80,11 +77,14 @@ public class Tile : MonoBehaviour {
 		if(!gameManager.interactionEnabled) {
 			return;
 		}
-
+			
 		if(inChain) {
 			// If the tile is already in a chain, we are going back into it.
 			// See if we should remove the tiles after it (undo)
 			gameManager.TryRemoveTilesAfterTile(this);
+
+			hovering = true;
+			tileView.ShowHover();
 		}
 		else {
 			// If not in a chain, see if we can add it.

@@ -10,7 +10,7 @@ public class LevelLoader : MonoBehaviour {
 	private string[] levelNames;
 
 	void Start() {
-		//CheckAllLevelsForErrors();
+		CheckAllLevelsForErrors();
 	}
 		
 	public LevelData LoadLevel(int levelNum) {
@@ -50,14 +50,8 @@ public class LevelLoader : MonoBehaviour {
 
 		for(int i = 0; i < levelNames.Length; i++) {
 
-			Debug.Log("-------------");
-			Debug.Log("Checking level " + i + " with name " + levelNames[i]);
-
 			LevelData levelData = LoadLevel(i);
-			Debug.Log(levelData.numCols + " cols, " + levelData.numRows + " rows");
-			Debug.Log("target score: " + levelData.targetScore);
-			Debug.Log("moves: " + levelData.moves);
-			Debug.Log("colours: " + levelData.numColours);
+			levelData.CheckForError(levelNames[i]);
 		}
 	}
 }

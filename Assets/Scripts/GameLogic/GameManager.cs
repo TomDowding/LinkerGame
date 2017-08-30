@@ -46,6 +46,10 @@ public class GameManager : MonoBehaviour {
 
 	private const int extraScoreForLongChainGem = 10;
 
+	public const int maxNumCols = 7;
+
+	public const int maxNumRows = 9;
+
 
 	void Start () {
 		
@@ -143,7 +147,7 @@ public class GameManager : MonoBehaviour {
 		Transform newLinkTransform = newLinkObject.transform;
 		newLinkTransform.parent = fromTile.transform;
 		newLinkTransform.localScale = dummyLinkObject.transform.localScale;
-		newLinkTransform.localPosition = Vector3.zero;
+		newLinkTransform.localPosition = new Vector3(0, 0, 1);
 
 		// Rotate link to point between two tiles
 		Vector2 v1 = new Vector2(fromTile.boardCoord.col, fromTile.boardCoord.row);

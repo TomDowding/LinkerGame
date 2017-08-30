@@ -58,6 +58,7 @@ public class LevelData {
 		return tiles;
 	}
 
+	#region Error checking
 	private void TilesErrorChecker(List<object> rowList) {
 
 		int lastNumTilesInRow = -1;
@@ -73,6 +74,33 @@ public class LevelData {
 			lastNumTilesInRow = row.Count;
 		}
 	}
+
+
+	public bool CheckForError(string levelName) {
+
+		if(numCols > GameManager.maxNumCols) {
+			Debug.LogWarning(levelName + " has too many cols (" + numCols + ")");
+			return false;
+		}
+		if(numRows > GameManager.maxNumRows) {
+			Debug.LogWarning(levelName + " has too many rows (" + numRows + ")");
+			return false;
+		}
+
+		for(int col = 0; col < numCols; col++) {
+
+			for(int row = 0; row < numRows; row++) {
+
+				if(tiles[col, row] > 1) {
+					Debug.LogWarning(levelName + " has strange tile index " + tiles[col, row] + " at (" + col + ", " + row + ")");
+					return false;
+				}
+			}
+		}
+			
+		return true;
+	}
+	#endregion
 }
 
 
