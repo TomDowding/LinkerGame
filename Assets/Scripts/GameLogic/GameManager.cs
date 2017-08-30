@@ -232,11 +232,15 @@ public class GameManager : MonoBehaviour {
 		ArrayList newTileColumns = board.FillGapsWithNewTiles(currentLevel, this);
 		yield return StartCoroutine(DropColumns(newTileColumns, 0.18f));
 
+		ResetChain();
+
 		UseMove();
 
-		if(!TryLevelSuccess()) {
+		bool levelLost = TryLevelFailure();
 
-			ResetChain();
+		bool levelWon = TryLevelSuccess();
+
+		if(!levelWon && !levelLost) {
 
 			interactionEnabled = true;
 		}
@@ -344,13 +348,8 @@ public class GameManager : MonoBehaviour {
 		currentNumMovesMade++;
 
 		uiManager.SetMovesRemaining(currentLevel.moves - currentNumMovesMade);
-
-		// Test for lost level
-		if((currentNumMovesMade == currentLevel.moves) && (currentScore < currentLevel.targetScore)) {
-			LevelFailure();
-		}
 	}
-
+		
 	private void AddTileScore(Tile tile, int chainIndex) {
 
 		// Calculate new score for this tile
@@ -385,14 +384,22 @@ public class GameManager : MonoBehaviour {
 		return false;
 	}
 
+	private bool TryLevelFailure() {
+
+		if((currentNumMovesMade == currentLevel.moves) && (currentScore < currentLevel.targetScore)) {
+			LevelFailure();
+			return true;
+		}
+
+		return false;
+	}
+
 	private bool CheckForLevelWin() {
 		return currentScore >= currentLevel.targetScore;
 	}
 		
 	private void LevelSuccess() {
 		
-		interactionEnabled = false;
-
 		PopupPanel.PopupHandlerDelegate delegateMethod = LevelSuccessPopupPressed;
 		uiManager.ShowLevelSuccess(delegateMethod);
 	}
@@ -400,8 +407,6 @@ public class GameManager : MonoBehaviour {
 	private void LevelFailure() {
 
 		levelLoseClip.Play();
-
-		interactionEnabled = false;
 
 		PopupPanel.PopupHandlerDelegate delegateMethod = LevelFailurePopupPressed;
 		uiManager.ShowLevelFailure(delegateMethod);
