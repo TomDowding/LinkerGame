@@ -22,6 +22,9 @@ public class GameManager : MonoBehaviour {
 	[SerializeField]
 	private AudioSource levelWinClip;
 
+	[SerializeField]
+	private AudioSource levelLoseClip;
+
 
 	// Game data holders
 	private ArrayList chain;
@@ -225,21 +228,18 @@ public class GameManager : MonoBehaviour {
 		ArrayList dropTileColumns = board.FillGapsWithExistingTiles();
 		yield return StartCoroutine(DropColumns(dropTileColumns, 0.1f));
 
-		// Try for level success now. If it is true we don't need to distract with new tiles
-		if(TryLevelSuccess()) {
-			UseMove();
-			yield break;
-		}
-	
 		// Fill in the remaining gaps with new tiles
 		ArrayList newTileColumns = board.FillGapsWithNewTiles(currentLevel, this);
 		yield return StartCoroutine(DropColumns(newTileColumns, 0.18f));
 
 		UseMove();
 
-		ResetChain();
+		if(!TryLevelSuccess()) {
 
-		interactionEnabled = true;
+			ResetChain();
+
+			interactionEnabled = true;
+		}
 	}
 		
 	private IEnumerator DropColumns(ArrayList dropColumns, float dropDelay) {
@@ -398,6 +398,8 @@ public class GameManager : MonoBehaviour {
 	}
 
 	private void LevelFailure() {
+
+		levelLoseClip.Play();
 
 		interactionEnabled = false;
 
