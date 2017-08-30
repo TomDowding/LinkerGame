@@ -46,27 +46,23 @@ public class Tile : MonoBehaviour {
 	}
 		
 	public void AddToChain(Tile linkedToTile) {
-		//Debug.Log("Adding tile to chain at " + boardCoord.description);
-	
+
 		inChain = true;
 		tileView.ShowInChain(tileType);
 	}
 
 	public void RemoveFromChain() {
-		//Debug.Log("Removing tile from chain at " + boardCoord.description);
 
 		inChain = false;
 		tileView.Reset(tileType);
 	}
 
 	public void RemoveFromBoard(int chainIndex) {
-		//Debug.Log("Removing tile from board at " + boardCoord.description);
 
 		tileView.ShowDisappear(chainIndex);
 	}
 
 	public void Drop(Vector2 toPosition) {
-		//Debug.Log("Dropping tile at " + boardCoord.description + " to " + toPosition);
 
 		tileView.ShowVisible();
 
@@ -84,8 +80,6 @@ public class Tile : MonoBehaviour {
 		if(!gameManager.interactionEnabled) {
 			return;
 		}
-
-		//Debug.Log("Select tile at " + boardCoord.description + ", inChain: " + inChain);
 
 		if(inChain) {
 			// If the tile is already in a chain, we are going back into it.
@@ -108,9 +102,7 @@ public class Tile : MonoBehaviour {
 		if(!gameManager.interactionEnabled) {
 			return;
 		}
-
-		//Debug.Log("Deselect tile at " + boardCoord.description + ", inChain: " + inChain);
-
+			
 		if(hovering) {
 			hovering = false;
 			tileView.ShowNoHover();
@@ -118,6 +110,7 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void LetGo() {
+		
 		if(!gameManager.interactionEnabled) {
 			return;
 		}

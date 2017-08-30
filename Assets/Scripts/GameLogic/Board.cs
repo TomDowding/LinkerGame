@@ -50,7 +50,7 @@ public class Board: MonoBehaviour {
 	private Transform tileHolder;
 
 	[SerializeField] 
-	private BoxCollider2D touchCollider;
+	private BoardTouch touchInput;
 
 	[SerializeField] 
 	private Canvas canvas;
@@ -134,10 +134,7 @@ public class Board: MonoBehaviour {
 		Debug.Log("Board offset is (" + boardStartOffset.x + ", " + boardStartOffset.y + ")");
 
 		// Adjust touch collider to fit the board shape
-		touchCollider.size = new Vector2(boardSize.numCols * boardSquareSize.width, boardSize.numRows * boardSquareSize.height);
-		Vector2 touchColliderOffset = touchCollider.offset;
-		touchColliderOffset.y = ((touchCollider.size.y * 0.5f) + boardStartOffset.y);
-		touchCollider.offset = touchColliderOffset;
+		touchInput.ResizeColliderForBoard(boardSize, boardSquareSize);
 	}
 
 	private void CreateBoardObjects(LevelData level, GameManager gameManager) {
@@ -201,20 +198,24 @@ public class Board: MonoBehaviour {
 
 		return newTile;
 	}
-
-	private int GetRandomTileType() {
-		return UnityEngine.Random.Range(0, SpriteServer.Instance.NumTileTypes());
-	}
 		
+	#region Helpers
 	public Vector2 PositionForBoardCoord(BoardCoord boardCoord) {
 		Vector2 pos = new Vector2((boardCoord.col * boardSquareSize.width) + (boardSquareSize.width * 0.5f), (boardCoord.row * boardSquareSize.height) + (boardSquareSize.height * 0.5f));
 		pos += boardStartOffset;
 		return pos;
 	}
 
-	public BoardCoord CoordForBoardPosition(Vector2 position) {
+	public Tile TileForTouchPosition(Vector2 position) {
+		BoardCoord touchCoord = CoordForTouchPosition(position);
+		return tiles[touchCoord.col, touchCoord.row];
+	}
 
-		return new BoardCoord(0, 0);
+	private BoardCoord CoordForTouchPosition(Vector2 position) {
+
+		int col = Mathf.FloorToInt(position.x * boardSize.numCols);
+		int row = Mathf.FloorToInt(position.y * boardSize.numRows);
+		return  new BoardCoord(col, row);
 	}
 
 	private bool IsBoardSquareAtCoord(BoardCoord boardCoord) {
@@ -235,7 +236,10 @@ public class Board: MonoBehaviour {
 		}
 		return false;
 	}
-		
+	#endregion
+
+
+	#region Actions
 	public void RemoveTile(Tile tile) {
 		// Creates a 'gap' in the tiles array
 		tiles[tile.boardCoord.col, tile.boardCoord.row] = null;
@@ -301,10 +305,6 @@ public class Board: MonoBehaviour {
 
 				BoardCoord boardCoord = new BoardCoord(col, row);
 
-			//	if(IsTileAtCoord(boardCoord)) {
-			//		continue;
-			//	}
-
 				if(IsBoardSquareAtCoord(boardCoord) && !IsTileAtCoord(boardCoord)) {
 
 					// Put in the new tile at this coord
@@ -321,4 +321,5 @@ public class Board: MonoBehaviour {
 
 		return columns;
 	}
+	#endregion
 }

@@ -10,7 +10,7 @@ public class LevelLoader : MonoBehaviour {
 	private string[] levelNames;
 
 	void Start() {
-		CheckAllLevelsForErrors();
+		//CheckAllLevelsForErrors();
 	}
 		
 	public LevelData LoadLevel(int levelNum) {

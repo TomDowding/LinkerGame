@@ -127,8 +127,6 @@ public class GameManager : MonoBehaviour {
 		chain.Clear();
 
 		ClearLinks();
-
-		interactionEnabled = true;
 	}
 	#endregion 
 
@@ -180,13 +178,11 @@ public class GameManager : MonoBehaviour {
 	public void TryCompleteChain() {
 
 		if(chain.Count >= minChainLength) {
-			interactionEnabled = false;
-
 			StartCoroutine(CompleteChain());
 		}
 		else {
-
 			foreach(Tile tile in chain) {
+				
 				tile.RemoveFromChain();
 			}
 
@@ -195,7 +191,9 @@ public class GameManager : MonoBehaviour {
 	}
 		
 	private IEnumerator CompleteChain() {
-		
+
+		interactionEnabled = false;
+
 		// Remove chain links from scene
 		ClearLinks();
 
@@ -236,6 +234,8 @@ public class GameManager : MonoBehaviour {
 		UseMove();
 
 		ResetChain();
+
+		interactionEnabled = true;
 	}
 		
 	private IEnumerator DropColumns(ArrayList dropColumns, float dropDelay) {
@@ -287,7 +287,7 @@ public class GameManager : MonoBehaviour {
 	}
 
 	private void PrepareLevel(LevelData level, int levelNum, bool isRetry = false) {
-		
+
 		interactionEnabled = false;
 
 		currentLevel = level;

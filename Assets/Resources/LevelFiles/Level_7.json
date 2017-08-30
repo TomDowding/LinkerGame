@@ -10,7 +10,7 @@
 					[1, 1, 1, 1, 1, 1, 1],
 	],
 
-  	"targetScore" : 3000,
+  	"targetScore" : 2000,
   	"moves" : 10,
 	"colours" : 5
 }
